@@ -3,6 +3,13 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — fix(launcher): AXS Home clock in 24-hour format (#20)
+- Issue #20
+- Files: apps/home/src/…/HomeActivity.java, apps/home/config/home.conf (clock line; AV label restored, owner preference), changes/1-fast-home/README.md, README.md
+- The TV has no 12/24-hour preference (time_12_24 unset), so the English default was 12-hour; AXS Home now uses the home.conf format (default HH:mm) for both modes
+- Verified on the TV: clock 15:31 matching the TV time (24-hour), date unchanged, input label AV; no crashes
+- TV state left: applied
+
 ## [2026-11-22] — feat(launcher): inputs bar at the bottom with connection dots (#18)
 - Issue #18
 - Files: apps/home/src/…/HomeActivity.java, apps/home/config/home.conf (AV renamed RCA), changes/1-fast-home/README.md, README.md

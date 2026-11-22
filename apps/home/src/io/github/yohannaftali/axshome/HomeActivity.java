@@ -78,6 +78,10 @@ public final class HomeActivity extends Activity {
         }
     };
     private TextView menuButton;
+    private TextClock clock;
+    private TextClock date;
+    private String timeFormat = "HH:mm";
+    private String dateFormat = "EEEE, d MMMM";
     private PopupWindow menu;
     private Dialog allApps;
 
@@ -148,16 +152,13 @@ public final class HomeActivity extends Activity {
 
         LinearLayout when = new LinearLayout(this);
         when.setOrientation(LinearLayout.VERTICAL);
-        TextClock clock = new TextClock(this);
-        clock.setFormat12Hour("h:mm");
-        clock.setFormat24Hour("HH:mm");
+        clock = new TextClock(this);
         clock.setTextColor(Color.WHITE);
         clock.setTextSize(TypedValue.COMPLEX_UNIT_SP, 44);
         clock.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
         when.addView(clock);
-        TextClock date = new TextClock(this);
-        date.setFormat12Hour("EEEE, d MMMM");
-        date.setFormat24Hour("EEEE, d MMMM");
+        date = new TextClock(this);
+        applyClockFormats();
         date.setTextColor(0xCCFFFFFF);
         date.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
         when.addView(date);
@@ -254,6 +255,7 @@ public final class HomeActivity extends Activity {
         if (stamp == loadedStamp) return;
         loadedStamp = stamp;
         parse(readConf());
+        applyClockFormats();
         if (waves != null) {
             root.removeView(waves);
             waves.stop();
@@ -308,6 +310,10 @@ public final class HomeActivity extends Activity {
                 case "menu":
                     menuItems.add(e);
                     break;
+                case "clock":
+                    timeFormat = field(e, 1).isEmpty() ? "HH:mm" : field(e, 1);
+                    dateFormat = field(e, 2).isEmpty() ? "EEEE, d MMMM" : field(e, 2);
+                    break;
                 case "wallpaper":
                     waveTop = parseColor(field(e, 2), waveTop);
                     waveAccent = parseColor(field(e, 3), waveAccent);
@@ -316,6 +322,14 @@ public final class HomeActivity extends Activity {
                     break;
             }
         }
+    }
+
+    /** Same format for both system modes: the TV has no 12/24-hour preference set. */
+    private void applyClockFormats() {
+        clock.setFormat12Hour(timeFormat);
+        clock.setFormat24Hour(timeFormat);
+        date.setFormat12Hour(dateFormat);
+        date.setFormat24Hour(dateFormat);
     }
 
     // ---- app grid and reordering ----
