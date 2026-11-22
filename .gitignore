@@ -3,3 +3,4 @@
 !.env.example
 captures/
 *.log
+apps/*/build/

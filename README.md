@@ -135,6 +135,13 @@ sh changes/<id>-<slug>/revert.sh    # undo it, back to baseline
 Read the change's `README.md` first — it says what you will see and how to
 recover if something goes wrong.
 
+| Change | What it does |
+|---|---|
+| [`changes/1-fast-home`](changes/1-fast-home/README.md) | **AXS Home**: 21 KB home screen with one-press HDMI tiles (PS5, Xbox, Switch) and your apps; layout in [`apps/home/config/home.conf`](apps/home/config/home.conf) |
+
+Building AXS Home needs the Android SDK (build-tools and a platform) and a JDK;
+`sh apps/home/build.sh` uses them directly, with no Gradle.
+
 ### Option B — manually with plain adb
 
 Everything the scripts do can be done by hand. Replace `<TV-IP>`:

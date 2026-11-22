@@ -101,3 +101,6 @@ Rules:
 ## Tracked Issues
 | ID | Title | Status | Last Checked |
 |----|-------|--------|--------------|
+| #1 | feat(launcher): fast minimal home screen with HDMI shortcuts for PS5, Xbox and Switch | in-progress | 2026-11-22 |
+| #2 | feat(apps): disable ads, tracking and unused preinstalled apps | open | 2026-11-22 |
+| #3 | feat(display): halve system animation durations | open | 2026-11-22 |

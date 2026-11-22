@@ -1,0 +1,4 @@
+# Baseline before #1 (captured 2026-11-22, redacted)
+home_activity=com.google.android.tvlauncher/.MainActivity
+axshome_installed=0
+google_tvlauncher_enabled=yes

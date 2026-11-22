@@ -6,8 +6,13 @@
 #   scripts/tv.sh info               # non-sensitive build facts
 #   scripts/tv.sh shell '<cmd>'      # run a shell command on the TV
 #   scripts/tv.sh screenshot <file>  # PNG into captures/ (git-ignored)
+#   scripts/tv.sh install <apk>      # adb install -r
+#   scripts/tv.sh push <local> <tv>  # adb push
 #   scripts/tv.sh adb <args...>      # any other adb command against the TV
 set -eu
+# Git Bash would rewrite TV-side paths such as /sdcard/... into Windows paths.
+export MSYS_NO_PATHCONV=1
+winpath() { if command -v cygpath >/dev/null 2>&1; then cygpath -w "$1"; else printf '%s' "$1"; fi; }
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 ENV_FILE="$ROOT/.env"
 REDACT="$ROOT/scripts/redact.sh"
@@ -66,8 +71,12 @@ case "$cmd" in
     mkdir -p "$(dirname -- "$out")"
     "$ADB" -s "$SERIAL" exec-out screencap -p > "$out"
     echo "$out" ;;
+  install)
+    "$ADB" -s "$SERIAL" install -r "$(winpath "$1")" 2>&1 | redact ;;
+  push)
+    "$ADB" -s "$SERIAL" push "$(winpath "$1")" "$2" 2>&1 | redact ;;
   adb)
     "$ADB" -s "$SERIAL" "$@" 2>&1 | redact ;;
   *)
-    sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+    sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
 esac
