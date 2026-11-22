@@ -16,6 +16,9 @@ fi
 GOOGLE_HOME=com.google.android.tvlauncher
 
 sh "$TV" install "$APK"
+# System monitor lists the apps used today from usage stats; appops allows it
+# without root. Uninstalling AXS Home (revert.sh) drops it.
+sh "$TV" shell "appops set $PKG GET_USAGE_STATS allow"
 # First start creates the app's external files dir with the right owner, and
 # proves the app runs before the Google launcher is taken away.
 if ! sh "$TV" shell "am start -W -n $PKG/.HomeActivity" | grep -q 'Status: ok'; then

@@ -3,6 +3,16 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — feat(launcher): System monitor page and `tv.sh top` (#38)
+- Issue #38
+- Files: apps/home/src/.../MonitorPanel.java (new), HomeActivity.java (menu type `monitor`, closes on HOME), AndroidManifest.xml (PACKAGE_USAGE_STATS, QUERY_ALL_PACKAGES), apps/home/config/home.conf (menu line), changes/1-fast-home/apply.sh (`appops set … GET_USAGE_STATS allow`) and README.md, scripts/tv.sh (`top [cpu|mem] [once]`), README.md, AGENTS.md, docs/screenshots/system-monitor.webp
+- Found on the TV: an app is denied /proc/stat, /proc/loadavg and thermal_zone temp (SELinux), and `dumpsys cpuinfo/meminfo` from the app says "Can't find service" even with DUMP granted. Owner chose: page shows what apps can read + PC-side htop; DUMP dropped
+- Page: CPU clock (average core speed from cpufreq time_in_state, graph), memory, storage (internal + USB), uptime every 2 s; apps used today (time on screen, last used) every 30 s; model/Android/patch/kernel line; nothing runs while closed
+- `tv.sh top`: two top samples 2 s apart, last one sorted by CPU (or `mem`) on the PC, redacted, refreshed until Ctrl-C (`once` for one shot)
+- Verified on TV: opens from ☰, values sane, sort and refresh keys, BACK closes, monitor thread gone after close, CPU with page open ~10% of one core (mostly the wallpaper), no crash, still no INTERNET; `tv.sh top` and `top mem once` work; screenshot reviewed (app names and usage times only)
+- Not verified: reboot (appops setting persists by design); USB storage line (no drive plugged in)
+- TV state left: applied
+
 ## [2026-11-22] — feat(launcher): System monitor page with live CPU, RAM, storage and a top-style app list
 - Issue #38 created on GitHub
 - Scope: launcher

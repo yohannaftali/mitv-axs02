@@ -325,6 +325,13 @@ public final class HomeActivity extends Activity {
         return timeFormat.contains("H") || timeFormat.contains("k");
     }
 
+    private MonitorPanel monitorPanel;
+
+    private MonitorPanel monitor() {
+        if (monitorPanel == null) monitorPanel = new MonitorPanel(this);
+        return monitorPanel;
+    }
+
     private SettingsPanel settings() {
         if (settingsPanel == null) settingsPanel = new SettingsPanel(this, prefs());
         return settingsPanel;
@@ -361,6 +368,7 @@ public final class HomeActivity extends Activity {
         if (menu != null && menu.isShowing()) menu.dismiss();
         if (allApps != null && allApps.isShowing()) allApps.dismiss();
         if (settingsPanel != null) settingsPanel.dismiss();
+        if (monitorPanel != null) monitorPanel.dismiss();
         if (moving != null) drop();
         focusFirst();
     }
@@ -757,6 +765,9 @@ public final class HomeActivity extends Activity {
                     break;
                 case "settings":
                     action = () -> settings().show();
+                    break;
+                case "monitor":
+                    action = () -> monitor().show();
                     break;
                 case "resetorder":
                     action = () -> {

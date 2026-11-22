@@ -36,6 +36,15 @@ Layout since #18:
   check mark. Wallpaper cards are small previews (the focused one animates);
   picking one changes the wallpaper behind the page at once. BACK returns to
   the categories, then closes; HOME also closes it.
+- **System monitor** (☰ → *System monitor*): live every 2 s, CPU clock (average
+  core speed from cpufreq `time_in_state`, with a graph), memory, storage
+  (internal and USB) and uptime; below, the apps used today with time on screen
+  and last use (LEFT/RIGHT sorts, OK refreshes, BACK closes). Nothing runs while
+  it is closed. `apply.sh` allows `GET_USAGE_STATS` with `appops` for the list.
+  Checked on this TV: Android 11 denies apps `/proc/stat`, `/proc/loadavg` and
+  thermal readings (SELinux), and hides the `cpuinfo`/`meminfo` services even
+  with `DUMP`, so total CPU %, temperature and per-app CPU/RAM are not shown;
+  `sh scripts/tv.sh top` gives that view on a PC.
 - **Clock**: 24-hour by default, whatever the TV's setting. ☰ → *Home settings* →
   Clock switches between 24-hour (15:30) and 12-hour with AM/PM (3:30 PM); the
   choice is kept. Without a choice, the `clock|<time format>|<date format>` line
