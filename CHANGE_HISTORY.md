@@ -3,6 +3,15 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — feat(apps): Phone remote — browser remote and keyboard via QR code (#40)
+- Issue #40
+- Files: apps/remote/ (new AXS Remote app: AndroidManifest.xml, build.sh, res/, assets/remote.html, src/.../RemoteIme.java, RemoteServer.java, SelfSignedCert.java, Qr.java, QrActivity.java), changes/40-phone-remote/ (apply, revert, check, baseline, README), apps/home/config/home.conf (☰ item), README.md, docs/screenshots/phone-remote.webp
+- Design (owner's choices): AXS Remote is the TV's input method and sends D-pad/OK/Back/Menu/number/channel keys and text to the focused app; HOME via home intent (SYSTEM_ALERT_WINDOW app-op); volume via the audio service; media keys to the active session. HTTPS + WebSocket on port 8077 with a self-signed EC certificate made on the TV (IP SAN, serverAuth, 397 days); pairing token in the QR code, renewed on each open; server only on demand, 10-minute idle stop. QR encoder and certificate builder written in plain Java (QR verified against zxing for versions 1–10). Aerial TV panel added on owner's remark.
+- Fixed during test: crash from a network write on the main thread (focus change); TV Settings ignored keyboard-type events (keys now sent as D-pad source); on-screen keyboard hidden because the remote counts as a hardware keyboard; ▼ button stuck "pressed" (CSS class clash)
+- Verified on TV (PC acting as the phone): page served; wrong and old tokens 403; AXS Home, YouTube, TV Bro, TV Settings react to arrows/OK/Back; typing into TV Bro address bar and a web page field; HOME from apps; volume up/down restored; Live TV opens; on-screen keyboard typing with the remote; revert restores Gboard and removes the app and ☰ item; revert and apply idempotent; no crash; AXS Home still has no INTERNET; README image has the QR pixelated (zxing reads nothing)
+- Not verified: Netflix (blocks screenshots, no UI tree — owner to check with a phone); a real phone accepting the certificate; CH keys with an antenna; 10-minute idle stop; reboot
+- TV state left: applied
+
 ## [2026-11-22] — feat(apps): Phone remote — QR code opens a browser remote and keyboard served by the TV
 - Issue #40 created on GitHub
 - Scope: apps (new AXS Remote APK, IME) and launcher (menu item)

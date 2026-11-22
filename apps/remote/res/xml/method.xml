@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AXS Remote as an input method: lets the phone remote send keys and text to the focused app. -->
+<input-method xmlns:android="http://schemas.android.com/apk/res/android" />
