@@ -3,6 +3,11 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — feat(launcher): System monitor page with live CPU, RAM, storage and a top-style app list
+- Issue #38 created on GitHub
+- Scope: launcher
+- Labels: enhancement, launcher
+
 ## [2026-11-22] — feat(launcher): console-style Home settings page (#36)
 - Issue #36
 - Files: apps/home/src/.../SettingsPanel.java (rewritten layout; settings keys, file copy and storage logic unchanged), Glyph.java (new, line icons drawn in code), HomeActivity.java (hide home content while settings is open, accent colour, previews, close settings on HOME), StyleView.java (wave layers end exactly on the bitmap edge: fixes a thin seam where the tiled copies meet), changes/1-fast-home/README.md, README.md, docs/screenshots/home-settings.webp

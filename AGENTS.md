@@ -132,3 +132,4 @@ Rules:
 | #32 | feat(systemui): AXS Clock screensaver with large clock and date | closed | 2026-11-22 |
 | #33 | feat(systemui): market and weather panel on the AXS Clock screensaver | closed | 2026-11-22 |
 | #36 | feat(launcher): console-style Home settings page with frosted panel, categories and wallpaper previews | closed | 2026-11-22 |
+| #38 | feat(launcher): System monitor page with live CPU, RAM, storage and a top-style app list | open | 2026-11-22 |
