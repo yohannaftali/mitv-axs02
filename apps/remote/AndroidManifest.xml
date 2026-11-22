@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="io.github.yohannaftali.axsremote"
+    android:versionCode="1"
+    android:versionName="1.0">
+
+    <uses-feature android:name="android.software.leanback" android:required="false" />
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+
+    <!-- The phone remote page is served by the TV on the home network (HTTPS, port 8077). -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- The TV's own LAN address, shown in the QR code. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Lets HOME on the phone bring up the home screen while another app is in front
+         (Android 11 blocks background activity starts otherwise); allowed by apply.sh with appops. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <application
+        android:label="AXS Remote"
+        android:icon="@drawable/icon"
+        android:banner="@drawable/banner"
+        android:allowBackup="false">
+
+        <activity
+            android:name=".QrActivity"
+            android:label="Phone remote"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:excludeFromRecents="true"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Material.NoActionBar.Fullscreen">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- The keyboard: sends the phone's keys and text to whatever app is focused. -->
+        <service
+            android:name=".RemoteIme"
+            android:label="AXS Remote keyboard"
+            android:exported="true"
+            android:permission="android.permission.BIND_INPUT_METHOD">
+            <intent-filter>
+                <action android:name="android.view.InputMethod" />
+            </intent-filter>
+            <meta-data android:name="android.view.im" android:resource="@xml/method" />
+        </service>
+    </application>
+</manifest>

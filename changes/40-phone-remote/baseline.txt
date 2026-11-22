@@ -1,0 +1,4 @@
+# Baseline before #40 (captured 2026-11-22, redacted)
+default_input_method=com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME
+enabled_input_methods=com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME
+axsremote_installed=0

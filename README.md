@@ -22,7 +22,8 @@ access, and it opens in about half a second.
 - **Inputs**: PS5 / HDMI 1, Xbox / HDMI 2, Nintendo Switch / HDMI 3, AV. OK
   switches input; the dot turns green while the input is sending a picture.
 - **Top right**: network status (Ethernet or Wi-Fi) and the ☰ menu (Settings,
-  Play Store, Home settings, System monitor, All apps, Reset app order).
+  Play Store, Home settings, System monitor, Phone remote, All apps, Reset
+  app order).
 - **Screensaver**: AXS Clock, a large clock and date over dimmed animated
   waves, with the weather for your city and USD/IDR, EUR/USD, GBP/USD,
   USD/JPY, gold, BTC, ETH and SOL (free sources, credited on screen).
@@ -47,6 +48,14 @@ apps' CPU or memory, so for an htop-like list run `sh scripts/tv.sh top` on
 the PC:
 
 ![System monitor: CPU clock, memory, storage, uptime and apps used today](docs/screenshots/system-monitor.webp)
+
+Phone remote (☰ → Phone remote): scan the QR code with an iPhone or Android
+phone and the browser becomes a remote — D-pad, volume, media keys, an
+aerial-TV number pad, and typing with the phone's keyboard whenever a text
+box is focused on the TV. Served by the TV itself over HTTPS; nothing to
+install:
+
+![Phone remote: the QR screen on the TV (code hidden here) and the remote page on a phone](docs/screenshots/phone-remote.webp)
 
 ## Target device
 
@@ -187,6 +196,7 @@ recover if something goes wrong.
 | [`changes/15-tv-bro`](changes/15-tv-bro/README.md) | TV Bro browser, installed from its verified GitHub release |
 | [`changes/32-clock-screensaver`](changes/32-clock-screensaver/README.md) | **AXS Clock** screensaver: large time and date on black, moves once a minute; 13 KB, no permissions |
 | [`changes/33-market-panel`](changes/33-market-panel/README.md) | AXS Clock 1.1: animated background, weather (auto location) and 8 market tiles from free, credited sources; fetches only while showing (needs #32) |
+| [`changes/40-phone-remote`](changes/40-phone-remote/README.md) | **AXS Remote**: phone remote and keyboard in the browser via a QR code (HTTPS on the LAN, own certificate); becomes the TV's keyboard |
 
 Building AXS Home needs the Android SDK (build-tools and a platform) and a JDK;
 `sh apps/home/build.sh` uses them directly, with no Gradle.

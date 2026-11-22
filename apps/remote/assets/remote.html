@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#05070D">
+<title>AXS Remote</title>
+<style>
+  :root { --bg:#05070D; --card:#10141D; --line:#232a37; --fg:#fff; --dim:#8b93a3; --accent:#3D7BFF; --ok:#4CD964; --warn:#FFC233; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--fg);
+    font:16px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { display:flex; flex-direction:column; align-items:center;
+    padding:max(14px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom)); touch-action:manipulation;
+    -webkit-user-select:none; user-select:none; }
+  header { width:100%; max-width:420px; display:flex; align-items:center; justify-content:space-between; }
+  h1 { font-size:13px; letter-spacing:.2em; color:var(--dim); margin:0; font-weight:700; }
+  #state { font-size:13px; color:var(--dim); display:flex; align-items:center; gap:6px; }
+  #dot { width:9px; height:9px; border-radius:50%; background:#555; }
+  #msg { width:100%; max-width:420px; margin-top:10px; font-size:14px; color:var(--warn); min-height:0; }
+  #typebar { width:100%; max-width:420px; margin-top:12px; display:none; }
+  #typebar.on { display:block; }
+  #typebar label { display:block; font-size:12px; color:var(--dim); margin:0 0 6px 4px; }
+  #text { width:100%; font-size:18px; padding:14px 16px; border-radius:14px; border:2px solid var(--accent);
+    background:var(--card); color:var(--fg); outline:none; -webkit-user-select:text; user-select:text; }
+  #pad { position:relative; width:min(78vw, 300px); height:min(78vw, 300px); margin:22px 0 10px;
+    border-radius:50%; background:radial-gradient(circle at 50% 40%, #1a2130, #0d1119); border:1px solid var(--line); }
+  #pad button { position:absolute; border:0; background:transparent; color:var(--fg); font-size:26px; }
+  #pad .up { top:0; left:30%; width:40%; height:30%; }
+  #pad .down { bottom:0; left:30%; width:40%; height:30%; }
+  #pad .left { left:0; top:30%; width:30%; height:40%; }
+  #pad .right { right:0; top:30%; width:30%; height:40%; }
+  #pad .ok { top:31%; left:31%; width:38%; height:38%; border-radius:50%; background:#242c3b;
+    font-size:18px; font-weight:600; letter-spacing:.05em; box-shadow:0 6px 18px rgba(0,0,0,.45); }
+  .row { width:100%; max-width:420px; display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-top:12px; }
+  .row button, #tv button { height:56px; border-radius:16px; border:1px solid var(--line); background:var(--card);
+    color:var(--fg); font-size:15px; }
+  button:active, button.pressed { background:#2a3346 !important; transform:scale(.97); }
+  #tvtoggle { margin-top:14px; background:none; border:0; color:var(--dim); font-size:14px; }
+  #tv { display:none; width:100%; max-width:420px; margin-top:4px; }
+  #tv.on { display:block; }
+  #tv .grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-top:10px; }
+  #tv button { height:50px; }
+  footer { margin-top:auto; padding-top:16px; font-size:12px; color:var(--dim); text-align:center; }
+</style>
+</head>
+<body>
+<header><h1>AXS REMOTE</h1><div id="state"><span id="dot"></span><span id="st">Connecting…</span></div></header>
+<div id="msg"></div>
+<div id="typebar"><label id="hint">Type on the TV</label><input id="text" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"></div>
+
+<div id="pad">
+  <button class="up" data-k="UP" aria-label="Up">▲</button>
+  <button class="left" data-k="LEFT" aria-label="Left">◀</button>
+  <button class="ok" data-k="OK">OK</button>
+  <button class="right" data-k="RIGHT" aria-label="Right">▶</button>
+  <button class="down" data-k="DOWN" aria-label="Down">▼</button>
+</div>
+<div class="row"><button data-k="BACK">↩ Back</button><button data-k="HOME">⌂ Home</button><button data-k="MENU">☰ Menu</button></div>
+<div class="row"><button data-k="VOLDOWN">🔉 Vol −</button><button data-k="MUTE">🔇 Mute</button><button data-k="VOLUP">🔊 Vol +</button></div>
+<div class="row"><button data-k="REW">⏪</button><button data-k="PLAY">⏯</button><button data-k="FF">⏩</button></div>
+
+<button id="tvtoggle">Aerial TV ▾</button>
+<div id="tv">
+  <div class="grid"><button data-k="CHUP">CH +</button><button data-k="GUIDE">Guide</button><button data-k="INFO">Info</button></div>
+  <div class="grid"><button data-k="CHDOWN">CH −</button><button data-k="DEL">⌫</button><button data-k="OK">OK</button></div>
+  <div class="grid">
+    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+    <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+    <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+    <span></span><button data-k="0">0</button><span></span>
+  </div>
+</div>
+<footer>Served by your TV on your home network · nothing leaves it</footer>
+
+<script>
+(function () {
+  var token = (location.hash || "").slice(1);
+  var ws = null, retry = 0, typing = false, sendTimer = null;
+  var dot = document.getElementById("dot"), st = document.getElementById("st"), msg = document.getElementById("msg");
+  var bar = document.getElementById("typebar"), input = document.getElementById("text"), hint = document.getElementById("hint");
+
+  function state(text, color) { st.textContent = text; dot.style.background = color; }
+  function send(s) { if (ws && ws.readyState === 1) ws.send(s); }
+  function buzz() { if (navigator.vibrate) navigator.vibrate(8); }
+
+  function connect() {
+    if (!token) { state("Not paired", "#555"); msg.textContent = "Scan the QR code on the TV (☰ → Phone remote)."; return; }
+    state("Connecting…", "#FFC233");
+    ws = new WebSocket("wss://" + location.host + "/ws?t=" + encodeURIComponent(token));
+    ws.onopen = function () { retry = 0; state("Connected", "#4CD964"); msg.textContent = ""; };
+    ws.onmessage = function (e) {
+      var d = String(e.data);
+      if (d.indexOf("hello:") === 0) {
+        msg.textContent = d === "hello:0" ? "The TV's keyboard is not AXS Remote, so keys cannot be sent. Run the apply script or pick AXS Remote under Settings → Keyboard." : "";
+      } else if (d.indexOf("editor:1:") === 0) {
+        var rest = d.slice(9), i = rest.indexOf(":");
+        hint.textContent = (i > 0 ? rest.slice(0, i) : "") || "Type on the TV";
+        if (!typing) input.value = i >= 0 ? rest.slice(i + 1) : "";
+        bar.classList.add("on");
+      } else if (d === "editor:0") {
+        bar.classList.remove("on"); input.blur(); typing = false;
+      }
+    };
+    ws.onclose = function (e) {
+      ws = null;
+      if (retry > 6) { state("Disconnected", "#FF6B6B"); msg.textContent = "Lost the TV. Open ☰ → Phone remote on the TV and scan again."; return; }
+      state("Reconnecting…", "#FFC233");
+      setTimeout(connect, Math.min(4000, 400 * Math.pow(2, retry++)));
+    };
+  }
+
+  // Buttons: tap sends once; holding an arrow repeats.
+  Array.prototype.forEach.call(document.querySelectorAll("button[data-k]"), function (b) {
+    var k = b.getAttribute("data-k"), rep = null, delay = null;
+    var repeatable = /^(UP|DOWN|LEFT|RIGHT|VOLUP|VOLDOWN|DEL)$/.test(k);
+    function stop() { clearTimeout(delay); clearInterval(rep); b.classList.remove("pressed"); }
+    b.addEventListener("pointerdown", function (e) {
+      e.preventDefault(); b.classList.add("pressed"); buzz(); send("key:" + k);
+      if (repeatable) delay = setTimeout(function () { rep = setInterval(function () { send("key:" + k); }, 120); }, 400);
+    });
+    ["pointerup", "pointerleave", "pointercancel"].forEach(function (ev) { b.addEventListener(ev, stop); });
+    b.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+  });
+
+  // Text: the whole field is sent shortly after each change; Enter submits.
+  input.addEventListener("focus", function () { typing = true; });
+  input.addEventListener("blur", function () { typing = false; });
+  input.addEventListener("input", function () {
+    clearTimeout(sendTimer);
+    sendTimer = setTimeout(function () { send("text:" + input.value); }, 120);
+  });
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); clearTimeout(sendTimer); send("text:" + input.value); send("enter"); input.blur(); }
+  });
+
+  document.getElementById("tvtoggle").addEventListener("click", function () {
+    var tv = document.getElementById("tv"); tv.classList.toggle("on");
+    this.textContent = tv.classList.contains("on") ? "Aerial TV ▴" : "Aerial TV ▾";
+  });
+  setInterval(function () { send("ping"); }, 25000);
+  connect();
+})();
+</script>
+</body>
+</html>
