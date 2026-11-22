@@ -53,7 +53,8 @@ Rules:
    Exception (owner's decision, 2026-11-22): reviewed screenshots of AXS
    Home's own screens may be committed to `docs/screenshots/` after
    checking each one shows no account or profile name, no personal photo or
-   video, no network name and no other app's content.
+   video, no network name and nothing from inside another app (the app
+   banners on the home screen are fine).
 5. Do not read, change, spoof or work around the Netflix ESN, DRM (Widevine)
    or any app's licence checks.
 6. `.githooks/pre-commit` blocks commits that contain `.env` values, `.env`
