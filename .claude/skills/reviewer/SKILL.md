@@ -44,7 +44,7 @@ Skim `CHANGE_HISTORY.md` and Tracked Issues for this area's history (reverts,
 
 ## Step 2 — Resolve Repository & Auth
 
-Same as `planner` Steps 2–3 (`gh` CLI, `yohannaftali/mitv-axs02`).
+Same as `planner` Steps 2–3 (`gh` CLI, `yohannaftali/mitv-axso2`).
 
 ---
 
