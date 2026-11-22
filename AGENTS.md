@@ -109,3 +109,4 @@ Rules:
 | #2 | feat(apps): disable ads, tracking and unused preinstalled apps | closed | 2026-11-22 |
 | #3 | feat(display): halve system animation durations | closed | 2026-11-22 |
 | #8 | fix(tooling): scripts/tv.sh hides adb exit status | closed | 2026-11-22 |
+| #10 | fix(launcher): AXS Home revert.sh restores baseline.txt instead of hard-coded state | closed | 2026-11-22 |
