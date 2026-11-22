@@ -5,13 +5,13 @@ app with no permissions (not even internet), no ads and no recommendations.
 Layout since #18:
 
 ```
- 3:23                                                              ☰
+15:23                                                              ☰
  Sunday, 22 November
  [YouTube] [Netflix] [Prime Video] [YouTube Music] [Browser]
 
                      ~ animated waves ~
  Inputs
- | 🎮 PS5 ● HDMI 1 | 🎮 Xbox ● HDMI 2 | 🎮 Switch ● HDMI 3 | ○○○ RCA ● |
+ | 🎮 PS5 ● HDMI 1 | 🎮 Xbox ● HDMI 2 | 🎮 Switch ● HDMI 3 | ○○○ AV ● |
 ```
 
 - **Apps grid**: OK opens an app. HOME always lands on the first app.
@@ -20,11 +20,13 @@ Layout since #18:
   reboots. ☰ → *Reset app order* goes back to the `home.conf` order.
 - **Inputs bar** (bottom): OK switches to that input; DOWN from the apps
   reaches it. A labelled input shows the label and its port; an unlabelled one
-  only the port. Icons are original drawings (gamepad, HDMI plug, RCA jacks),
+  only the port. Icons are original drawings (gamepad, HDMI plug, AV jacks),
   not console logos.
 - **Connection dot**: green while the input is sending a picture
   (`INPUT_STATE_CONNECTED`), grey otherwise; it updates live. This TV reports
-  "standby" for every input, even an empty RCA port, so standby counts as grey.
+  "standby" for every input, even an empty AV port, so standby counts as grey.
+- **Clock**: 24-hour (`HH:mm`) whatever the TV's setting; change it with the
+  `clock|<time format>|<date format>` line in `home.conf`.
 - **☰ menu** (also the remote's MENU key): Settings, Google Play Store, All
   apps, Reset app order. The remote's ALL_APPS key opens All apps directly.
 - **Waves**: each layer is drawn once in the background at half resolution and
