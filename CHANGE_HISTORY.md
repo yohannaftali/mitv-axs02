@@ -3,6 +3,9 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — docs: model name is MiTV-AXSO2 (letter O)
+- README.md, AGENTS.md, skill descriptions and scripts/tv.sh corrected; repo name `mitv-axs02` unchanged
+
 ## [2026-11-22] — feat(display): halve system animation durations (#3)
 - Issue #3
 - Files: changes/3-animations/

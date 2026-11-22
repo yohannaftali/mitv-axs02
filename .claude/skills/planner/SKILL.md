@@ -1,7 +1,7 @@
 ---
 name: planner
 description: >
-  Context-aware GitHub issue tracker for the MiTV-AXS02 UI customisation
+  Context-aware GitHub issue tracker for the MiTV-AXSO2 UI customisation
   project. Use whenever the user wants to create, update, or check
   issues/tickets — "create a task", "open a ticket", "log this as an issue",
   "add to the backlog", "track this bug", "plan this feature", or "plan" /

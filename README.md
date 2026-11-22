@@ -1,6 +1,6 @@
 # mitv-axs02
 
-Reversible user-interface customisation for the **Xiaomi Mi TV MiTV-AXS02**
+Reversible user-interface customisation for the **Xiaomi Mi TV MiTV-AXSO2**
 (Android TV 11), done entirely over ADB from a PC — no root, no flashing.
 Launcher, system settings, animations, display density, hidden or disabled
 preinstalled apps: every change ships with an `apply`, a `revert` and a
@@ -10,7 +10,7 @@ preinstalled apps: every change ships with an `apply`, a `revert` and a
 
 | | |
 |---|---|
-| Model | MiTV-AXS02 (`ro.product.model` reports `MiTV-AXSO2`) |
+| Model | MiTV-AXSO2 (letter O; the repo name `mitv-axs02` uses a zero) |
 | Android | 11 (API 30), Android TV |
 | Security patch | 2024-02-05 |
 | Kernel | 4.9.269 |

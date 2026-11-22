@@ -2,7 +2,7 @@
 name: coder
 description: >
   Implements issues from this project's GitHub tracker as reversible
-  ADB-driven UI changes on the MiTV-AXS02 (Android 11 TV). Use whenever the
+  ADB-driven UI changes on the MiTV-AXSO2 (Android 11 TV). Use whenever the
   user wants to "fix an issue", "work on a ticket", "pick up a task",
   "implement issue #X", or similar. Reads AGENTS.md, lets the user pick an
   open issue, splits it into tasks, writes apply/revert/check scripts under
