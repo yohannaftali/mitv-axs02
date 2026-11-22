@@ -3,6 +3,14 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — feat(launcher): inputs bar at the bottom with connection dots (#18)
+- Issue #18
+- Files: apps/home/src/…/HomeActivity.java, apps/home/config/home.conf (AV renamed RCA), changes/1-fast-home/README.md, README.md
+- Inputs moved from the right sidebar to a row of four cards at the bottom; apps now one row of five; status dot per input from TvInputManager.getInputState + onInputStateChanged (green = CONNECTED, grey otherwise); long labels auto-shrink
+- Verified on the TV: layout screenshots; DOWN/UP between apps and inputs; OK tunes HW5/HW6/HW7/HW1; all dots grey with consoles off (all inputs report standby); cold start 502–531 ms; about 13% of one core on home; no crashes
+- Not verified: a dot turning green with a console on (owner to check)
+- TV state left: applied
+
 ## [2026-11-22] — feat(launcher): AXS Home redesign (#14)
 - Issue #14
 - Files: apps/home/src/…/HomeActivity.java (rewritten), WaveView.java and IconView.java (new), apps/home/config/home.conf (new format), changes/1-fast-home/README.md, README.md
