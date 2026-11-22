@@ -1,0 +1,6 @@
+# Baseline before #33 (captured 2026-11-22, redacted): the offline AXS Clock from #32
+axsclock_version=1
+axsclock_internet=0
+screensaver_components=io.github.yohannaftali.axsclock/.ClockDream
+# git commit holding the offline apps/clock source that revert.sh rebuilds
+offline_source=90b9cca
