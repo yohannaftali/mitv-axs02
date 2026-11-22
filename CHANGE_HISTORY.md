@@ -3,6 +3,11 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — feat(launcher): console-style Home settings page with frosted panel, categories and wallpaper previews
+- Issue #36 created on GitHub
+- Scope: launcher
+- Labels: enhancement, launcher
+
 ## [2026-11-22] — main deployed to the TV (50290f4)
 - Built AXS Home and AXS Clock 1.1 from main and applied #1 and #33; check.sh 0 for #1, #2, #3, #15, #32, #33
 - Home screen and screensaver checked on screen; no crashes for either app; secret scan of #32..#33 clean
