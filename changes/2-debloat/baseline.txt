@@ -1,0 +1,17 @@
+# Baseline before #2 (captured 2026-11-22, after #1 applied, after a reboot; redacted)
+com.miui.tv.analytics=enabled
+com.xiaomi.statistic=enabled
+com.mitv.tvhome.mitvplus=enabled
+com.mitv.tvhome.michannel=enabled
+com.xm.webcontent=enabled
+com.google.android.tvrecommendations=enabled
+com.google.android.backdrop=enabled
+com.mitv.tvhome.atv=enabled
+com.google.android.play.games=enabled
+com.google.android.videos=enabled
+com.mitv.gallery=enabled
+com.xiaomi.mimusic2=enabled
+com.xiaomi.mitv.handbook=enabled
+com.xiaomi.mitv.mediaexplorer=enabled
+screensaver_components=com.google.android.backdrop/.Backdrop
+mem_available_kb=947408
