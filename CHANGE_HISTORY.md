@@ -3,6 +3,12 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — feat(launcher): Aerial TV card before HDMI 1 in the inputs bar
+- Issue #42 created on GitHub
+- Scope: launcher
+- Labels: enhancement, launcher
+- Tuner input on this TV: com.droidlogic.tvinput/.services.ADTVInputService/HW16 (analog + digital)
+
 ## [2026-11-22] — feat(apps): Phone remote — browser remote and keyboard via QR code (#40)
 - Issue #40
 - Files: apps/remote/ (new AXS Remote app: AndroidManifest.xml, build.sh, res/, assets/remote.html, src/.../RemoteIme.java, RemoteServer.java, SelfSignedCert.java, Qr.java, QrActivity.java), changes/40-phone-remote/ (apply, revert, check, baseline, README), apps/home/config/home.conf (☰ item), README.md, docs/screenshots/phone-remote.webp
