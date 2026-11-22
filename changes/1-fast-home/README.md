@@ -16,9 +16,11 @@ Layout since #18:
  | 🎮 PS5 ● HDMI 1 | 🎮 Xbox ● HDMI 2 | 🎮 Switch ● HDMI 3 | ○○○ AV ● |
 ```
 
-- **Apps grid**: OK opens an app. HOME always lands on the first app.
-- **Rearrange on the TV**: long-press OK on an app, move it with the arrows
-  (it swaps places), OK to place. The order is kept across restarts and
+- **Apps row**: one row spread evenly across the screen; with more apps it
+  scrolls sideways. The selected banner zooms in with a white ring around it
+  and its name underneath. OK opens an app. HOME always lands on the first app.
+- **Rearrange on the TV**: long-press OK on an app (the ring turns amber),
+  move it with LEFT/RIGHT (it swaps places), OK to place. The order is kept across restarts and
   reboots. ☰ → *Reset app order* goes back to the `home.conf` order.
 - **Inputs bar** (bottom): OK switches to that input; DOWN from the apps
   reaches it. A labelled input shows the label and its port; an unlabelled one

@@ -128,3 +128,4 @@ Rules:
 | #24 | feat(launcher): Home settings page with 12/24-hour clock choice | closed | 2026-11-22 |
 | #25 | feat(launcher): built-in animated wallpapers Waves, Orbit, Pop and Bloom | closed | 2026-11-22 |
 | #26 | feat(launcher): custom wallpapers from USB and Downloads (images, GIF/WebP, MP4) | closed | 2026-11-22 |
+| #29 | feat(launcher): modern app tiles with console-style focus ring, centred row and sideways scrolling | closed | 2026-11-22 |

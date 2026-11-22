@@ -3,6 +3,15 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — feat(launcher): modern app tiles with focus ring, even row and sideways scrolling (#29)
+- Issue #29
+- Files: apps/home/src/.../HomeActivity.java, changes/1-fast-home/README.md
+- Tiles: rounded, clipped banners with a soft shadow; focus draws a white ring outside the banner (visible on white banners), zooms 1.1x and shows the app name; amber ring while moving
+- One row spread evenly; more apps scroll sideways; rearrange is LEFT/RIGHT only
+- Fixed during test: the page and All apps layouts clipped the zoomed first tile at their padding
+- Verified on TV: ring on all sides for the first and last tile, move mode, 9-app scroll (temporary config, then restored), All apps, cold start 564–593 ms (avg 575, +6%), wallpaper CPU ~13% of one core
+- TV state left: applied
+
 ## [2026-11-22] — chore: rename repository to mitv-axso2
 - GitHub repo renamed from `mitv-axs02` (zero) to `mitv-axso2` (letter O, matching the model); GitHub redirects the old URL
 - Files: README.md (title, clone commands, model note), AGENTS.md (remote), planner and reviewer skills (repo slug)

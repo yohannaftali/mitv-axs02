@@ -15,8 +15,10 @@ access, and it opens in about half a second.
 
 ![AXS Home with the Waves wallpaper: clock, apps row, inputs bar](docs/screenshots/home-waves.webp)
 
-- **Apps**: YouTube, Netflix, Prime Video, YouTube Music, Browser (TV Bro).
-  Long-press OK to rearrange them on the TV.
+- **Apps**: YouTube, Netflix, Prime Video, YouTube Music, Browser (TV Bro),
+  spread evenly in one row that scrolls sideways when you add more. The
+  selected app zooms in with a ring around it, console-style. Long-press OK
+  to rearrange them on the TV.
 - **Inputs**: PS5 / HDMI 1, Xbox / HDMI 2, Nintendo Switch / HDMI 3, AV. OK
   switches input; the dot turns green while the input is sending a picture.
 - **Top right**: network status (Ethernet or Wi-Fi) and the ☰ menu (Settings,
