@@ -1,7 +1,7 @@
 ---
 name: tester
 description: >
-  Verifies on the real MiTV-AXS02 that an issue claimed as fixed actually
+  Verifies on the real MiTV-AXSO2 that an issue claimed as fixed actually
   works, then merges it or reports the failure. Use for "/tester #<id>",
   "test issue #<id>", "verify #<id>", or when coder hands off. Runs the
   change's apply/check/revert scripts over ADB, checks the screen with

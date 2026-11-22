@@ -1,4 +1,4 @@
-# AGENTS.md — MiTV-AXS02 UI customisation
+# AGENTS.md — MiTV-AXSO2 UI customisation
 
 Single source of truth for the `planner`, `coder`, `tester` and `reviewer`
 skills in `.claude/skills/`. Read it in full before working on an issue.
@@ -10,7 +10,7 @@ skills in `.claude/skills/`. Read it in full before working on an issue.
 - default branch: `main`; one branch per issue, `<id>-<short-slug>`.
 
 ## Goal
-Change the user interface of one Xiaomi TV, model **MiTV-AXS02**: launcher /
+Change the user interface of one Xiaomi TV, model **MiTV-AXSO2**: launcher /
 home screen, system UI settings, animations, display and density, the apps
 that are shown, preinstalled apps that are hidden or disabled, and companion
 apps installed on the TV. Every change is made over ADB and can be reverted.
@@ -18,7 +18,7 @@ apps installed on the TV. Every change is made over ADB and can be reverted.
 ## Target device (non-sensitive, may be published)
 | Fact | Value |
 |---|---|
-| Model | `MiTV-AXSO2` as reported by `ro.product.model` (letter O; marketed as MiTV-AXS02) |
+| Model | `MiTV-AXSO2` (letter O, as reported by `ro.product.model`) |
 | Manufacturer / device | Xiaomi / `dangalUHD` |
 | OS | Android 11 (API 30), Android TV |
 | Build | RTT0.211201.001.1150 release-keys |

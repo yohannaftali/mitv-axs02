@@ -2,7 +2,7 @@
 name: reviewer
 description: >
   Post-merge quality audit for an issue that tester has already tested,
-  merged and closed in the MiTV-AXS02 UI project. Independently audits the
+  merged and closed in the MiTV-AXSO2 UI project. Independently audits the
   merged change for reversibility, lock-out risk, guardrail and convention
   compliance (AGENTS.md), Android 11 correctness, and privacy leaks into the
   public repo (TV IP, Netflix ESN, serial, MACs, account names). Never closes

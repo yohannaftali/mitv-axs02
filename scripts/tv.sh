@@ -1,5 +1,5 @@
 #!/bin/sh
-# adb wrapper for the MiTV-AXS02. Reads the TV address from .env, never prints
+# adb wrapper for the MiTV-AXSO2. Reads the TV address from .env, never prints
 # it, and pipes all output through scripts/redact.sh.
 #
 #   scripts/tv.sh connect            # adb connect (port 5555 or TV_ADB_PORT)
