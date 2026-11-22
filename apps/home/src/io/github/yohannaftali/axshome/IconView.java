@@ -7,11 +7,12 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import android.view.View;
 
-/** Original input icons drawn in code: gamepad, HDMI plug, AV (RCA) jacks. */
+/** Original input icons drawn in code: gamepad, HDMI plug, AV (RCA) jacks, aerial antenna. */
 final class IconView extends View {
     static final int GAMEPAD = 0;
     static final int HDMI = 1;
     static final int AV = 2;
+    static final int ANTENNA = 3;
 
     private final int type;
     private final int color;
@@ -29,6 +30,7 @@ final class IconView extends View {
         if ("gamepad".equals(s)) return GAMEPAD;
         if ("av".equals(s)) return AV;
         if ("hdmi".equals(s)) return HDMI;
+        if ("antenna".equals(s)) return ANTENNA;
         return port.toUpperCase().startsWith("HDMI") ? HDMI : AV;
     }
 
@@ -69,6 +71,24 @@ final class IconView extends View {
                     float x = w * (0.27f + i * 0.115f);
                     c.drawRect(x, h * 0.44f, x + w * 0.05f, h * 0.52f, p);
                 }
+                break;
+            }
+            case ANTENNA: {
+                // A roof antenna: mast, three cross-bars, and a small TV-wave arc.
+                p.setColor(color);
+                float mx = w * 0.5f;
+                c.drawRect(mx - s * 0.03f, h * 0.22f, mx + s * 0.03f, h * 0.86f, p);
+                for (int i = 0; i < 3; i++) {
+                    float y = h * (0.28f + i * 0.13f);
+                    float half = s * (0.34f - i * 0.07f);
+                    c.drawRoundRect(mx - half, y, mx + half, y + s * 0.05f, s * 0.03f, s * 0.03f, p);
+                }
+                p.setStyle(Paint.Style.STROKE);
+                p.setStrokeWidth(s * 0.05f);
+                p.setStrokeCap(Paint.Cap.ROUND);
+                r.set(mx - s * 0.16f, h * 0.06f, mx + s * 0.16f, h * 0.30f);
+                c.drawArc(r, 210, 120, false, p);
+                p.setStyle(Paint.Style.FILL);
                 break;
             }
             default: {

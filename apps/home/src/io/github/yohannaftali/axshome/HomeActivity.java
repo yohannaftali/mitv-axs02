@@ -138,7 +138,8 @@ public final class HomeActivity extends Activity {
 
         content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
-        content.setPadding(dp(48), dp(28), dp(48), dp(24));
+        // Same margin on every edge, like the bottom, so the corners and the inputs get the room.
+        content.setPadding(dp(24), dp(24), dp(24), dp(24));
         content.setClipToPadding(false);
         content.setClipChildren(false);
         root.addView(content, new FrameLayout.LayoutParams(
@@ -150,9 +151,10 @@ public final class HomeActivity extends Activity {
         grid.setOrientation(LinearLayout.VERTICAL);
         grid.setClipChildren(false);
         grid.setClipToPadding(false);
+        // The apps row sits in the middle of the space between the top bar and the inputs.
+        grid.setGravity(Gravity.CENTER_VERTICAL);
         LinearLayout.LayoutParams gridLp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f);
-        gridLp.topMargin = dp(28);
         content.addView(grid, gridLp);
 
         inputBar = new LinearLayout(this);
@@ -175,19 +177,21 @@ public final class HomeActivity extends Activity {
     private View topBar() {
         LinearLayout bar = new LinearLayout(this);
         bar.setOrientation(LinearLayout.HORIZONTAL);
-        bar.setGravity(Gravity.CENTER_VERTICAL);
+        bar.setGravity(Gravity.TOP);
+        bar.setClipChildren(false);
 
         LinearLayout when = new LinearLayout(this);
         when.setOrientation(LinearLayout.VERTICAL);
         clock = new TextClock(this);
         clock.setTextColor(Color.WHITE);
-        clock.setTextSize(TypedValue.COMPLEX_UNIT_SP, 44);
+        clock.setTextSize(TypedValue.COMPLEX_UNIT_SP, 60);
         clock.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
+        clock.setIncludeFontPadding(false);
         when.addView(clock);
         date = new TextClock(this);
         applyClockFormats();
         date.setTextColor(0xCCFFFFFF);
-        date.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+        date.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
         when.addView(date);
         bar.addView(when, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
@@ -202,10 +206,15 @@ public final class HomeActivity extends Activity {
         menuButton.setBackground(focusBg(0x00000000, 24));
         menuButton.setOnClickListener(v -> showMenu());
         net = new NetIcon(this);
+        // ☰'s 56 dp focus box has room around the glyph: pull it into the corner so the
+        // glyph, not the box, lines up with the page margin; the network icon centres on it.
         LinearLayout.LayoutParams netLp = new LinearLayout.LayoutParams(dp(36), dp(36));
-        netLp.rightMargin = dp(16);
+        netLp.rightMargin = dp(6);
         bar.addView(net, netLp);
-        bar.addView(menuButton, new LinearLayout.LayoutParams(dp(56), dp(56)));
+        LinearLayout.LayoutParams menuLp = new LinearLayout.LayoutParams(dp(56), dp(56));
+        menuLp.topMargin = -dp(10);
+        menuLp.rightMargin = -dp(14);
+        bar.addView(menuButton, menuLp);
         return bar;
     }
 
@@ -527,8 +536,9 @@ public final class HomeActivity extends Activity {
         scroll.setPadding(dp(SCROLL_BLEED), dp(14), dp(SCROLL_BLEED), dp(14));
         LinearLayout.LayoutParams scrollLp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        scrollLp.leftMargin = -dp(SCROLL_BLEED);
-        scrollLp.rightMargin = -dp(SCROLL_BLEED);
+        // Also out by the ring gap, so the tiles themselves (not their focus rings) sit on the page margin.
+        scrollLp.leftMargin = -dp(SCROLL_BLEED + RING_GAP);
+        scrollLp.rightMargin = -dp(SCROLL_BLEED + RING_GAP);
         grid.addView(scroll, scrollLp);
 
         LinearLayout row = new LinearLayout(this);
@@ -646,19 +656,16 @@ public final class HomeActivity extends Activity {
     private void buildInputs() {
         inputBar.removeAllViews();
         dots.clear();
-        TextView title = new TextView(this);
-        title.setText("Inputs");
-        title.setTextColor(0x99FFFFFF);
-        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        title.setTypeface(Typeface.DEFAULT_BOLD);
-        title.setPadding(dp(8), 0, 0, dp(8));
-        inputBar.addView(title);
-
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setClipChildren(false);
-        inputBar.addView(row, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        // Cards keep 6 dp on each side (12 dp gaps); pulling the row out by 6 dp puts the outer
+        // cards on the page margin, in line with the clock, the app tiles and the bottom margin.
+        LinearLayout.LayoutParams rowLp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        rowLp.leftMargin = -dp(6);
+        rowLp.rightMargin = -dp(6);
+        inputBar.addView(row, rowLp);
         for (String[] e : inputs) {
             String label = field(e, 1);
             String port = field(e, 2);
@@ -678,7 +685,7 @@ public final class HomeActivity extends Activity {
         card.setBackground(focusBg(0x8C10141C, 12));
         card.setContentDescription(label.isEmpty() ? port : label);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, dp(72), 1f);
-        lp.setMargins(dp(8), 0, dp(8), 0);
+        lp.setMargins(dp(6), 0, dp(6), 0);
         card.setLayoutParams(lp);
 
         LinearLayout content = new LinearLayout(this);
@@ -689,26 +696,42 @@ public final class HomeActivity extends Activity {
         text.setOrientation(LinearLayout.VERTICAL);
         text.setPadding(dp(12), 0, dp(14), 0);
         TextView name = label(label.isEmpty() ? port : label, 17, Color.WHITE, true);
-        name.setMaxLines(1);
+        // Up to two lines in a fixed box: short names stay large, long ones ("Nintendo Switch")
+        // shrink onto two lines instead of being cut when five cards share the bar.
+        name.setMaxLines(2);
+        name.setGravity(Gravity.CENTER_VERTICAL);
         name.setAutoSizeTextTypeUniformWithConfiguration(11, 17, 1, TypedValue.COMPLEX_UNIT_SP);
-        text.addView(name, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(24)));
+        text.addView(name, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(34)));
         if (!label.isEmpty() && !port.isEmpty()) text.addView(label(port, 13, 0xAAFFFFFF, false));
         content.addView(text, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         card.addView(content, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
-        View dot = new View(this);
-        paintDot(dot, inputState(id));
-        card.addView(dot, new FrameLayout.LayoutParams(dp(10), dp(10), Gravity.TOP | Gravity.END));
-        dots.put(id, dot);
+        // A tuner (aerial TV) cannot report an antenna signal like HDMI does, so it gets no dot.
+        boolean tuner = isTuner(id);
+        if (!tuner) {
+            View dot = new View(this);
+            paintDot(dot, inputState(id));
+            card.addView(dot, new FrameLayout.LayoutParams(dp(10), dp(10), Gravity.TOP | Gravity.END));
+            dots.put(id, dot);
+        }
 
         card.setOnFocusChangeListener((v, has) -> {
             float s = has ? 1.05f : 1f;
             v.animate().scaleX(s).scaleY(s).setDuration(90).start();
         });
-        Intent view = new Intent(Intent.ACTION_VIEW, TvContract.buildChannelUriForPassthroughInput(id));
+        // HDMI/AV: the passthrough "channel". Tuner: its channels, so Live TV plays the last one,
+        // or runs its channel scan the first time (no channels yet).
+        Intent view = new Intent(Intent.ACTION_VIEW, tuner
+                ? TvContract.buildChannelsUriForInput(id)
+                : TvContract.buildChannelUriForPassthroughInput(id));
         card.setOnClickListener(v -> launch(view));
         return card;
+    }
+
+    private boolean isTuner(String id) {
+        android.media.tv.TvInputInfo info = tvInputs == null ? null : tvInputs.getTvInputInfo(id);
+        return info != null && info.getType() == android.media.tv.TvInputInfo.TYPE_TUNER;
     }
 
     private int inputState(String id) {

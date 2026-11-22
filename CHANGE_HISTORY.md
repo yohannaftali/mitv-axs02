@@ -3,6 +3,15 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — feat(launcher): Aerial TV card and tighter home layout (#42)
+- Issue #42
+- Files: apps/home/src/.../HomeActivity.java (tuner card opens TvContract.buildChannelsUriForInput, no dot for tuners; two-line auto-sized card names; equal 24 dp page margins; clock 60 sp / date 22 sp without font padding; ☰ and network icon in the top-right corner; apps row vertically centred; tiles and input cards aligned to the page margin; "Inputs" label removed; 12 dp card gaps), IconView.java (antenna icon), apps/home/config/home.conf (Aerial TV line, documented), README.md, changes/1-fast-home/README.md, docs/screenshots/home-{waves,orbit,pop,bloom}.webp
+- Found on the TV: the tuner input is com.droidlogic.tvinput/.services.ADTVInputService/HW16; with no channels Live TV starts a channel scan (twice during testing, both stopped; one had been started by Live TV itself when the phone remote opened it during #40)
+- Owner's layout requests during the work: narrower side margins, top bar in the corners, bigger clock/date, centred apps row, inputs aligned with apps and bottom margin, no "Inputs" label, wider cards
+- Verified on TV: Aerial TV card opens Live TV on the tuner (channel scan as there are no channels), HDMI 1 still switches, all five names fit, ☰ focus ring inside the screen, cold start 601–637 ms, no crash, no INTERNET, check.sh 0
+- Not verified: reboot; a TV with scanned channels (last-channel playback)
+- TV state left: applied
+
 ## [2026-11-22] — feat(launcher): Aerial TV card before HDMI 1 in the inputs bar
 - Issue #42 created on GitHub
 - Scope: launcher
