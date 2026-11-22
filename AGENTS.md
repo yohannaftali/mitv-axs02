@@ -89,8 +89,12 @@ Rules:
 - Scripts are POSIX `sh`, run from Git Bash on Windows (the dev machine);
   the TV-side commands they send must also be valid in the TV's `toybox`
   `sh`. Every TV call goes through `scripts/tv.sh`, never a hard-coded IP.
-- `check.sh` exits 0 when the change is in place and non-zero otherwise, so
-  `tester` can verify apply and revert mechanically.
+- `check.sh` exits 0 when the change is in place, 1 when it is not, and 2 when
+  the TV cannot be checked (unreachable, adb error), so `tester` can verify
+  apply and revert mechanically and an offline TV never counts as reverted.
+- `scripts/tv.sh` exits with adb's status (the remote command's status for
+  `shell`), so `set -e` stops a script at the first failed TV step. Check its
+  status; never pipe it into something that hides it.
 - Changes are idempotent: running `apply.sh` twice is safe; `revert.sh` on
   an unchanged TV is safe.
 - Use Android 11 (API 30) commands and APIs only; check that a command exists
@@ -104,3 +108,4 @@ Rules:
 | #1 | feat(launcher): fast minimal home screen with HDMI shortcuts for PS5, Xbox and Switch | closed | 2026-11-22 |
 | #2 | feat(apps): disable ads, tracking and unused preinstalled apps | closed | 2026-11-22 |
 | #3 | feat(display): halve system animation durations | closed | 2026-11-22 |
+| #8 | fix(tooling): scripts/tv.sh hides adb exit status | closed | 2026-11-22 |

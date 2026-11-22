@@ -15,7 +15,10 @@ for k in window_animation_scale transition_animation_scale animator_duration_sca
   fi
 done
 sh "$TV" shell "$cmds"
-if sh "$HERE/check.sh" >/dev/null; then
-  echo "revert: animation scales still changed" >&2; exit 1
-fi
+rc=0; sh "$HERE/check.sh" >/dev/null || rc=$?
+case $rc in
+  0) echo "revert: animation scales still changed" >&2; exit 1 ;;
+  1) ;;
+  *) echo "revert: cannot verify, TV unreachable" >&2; exit 2 ;;
+esac
 echo "reverted: animation scales restored from baseline"

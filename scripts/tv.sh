@@ -9,6 +9,9 @@
 #   scripts/tv.sh install <apk>      # adb install -r
 #   scripts/tv.sh push <local> <tv>  # adb push
 #   scripts/tv.sh adb <args...>      # any other adb command against the TV
+#
+# Exits with adb's own status (the remote command's status for `shell`), so
+# callers can tell a failed step or an unreachable TV from success.
 set -eu
 # Git Bash would rewrite TV-side paths such as /sdcard/... into Windows paths.
 export MSYS_NO_PATHCONV=1
@@ -23,7 +26,7 @@ envval() {
 }
 
 IP=$(envval tv_private_ip_address)
-PORT=$(envval TV_ADB_PORT); PORT=${PORT:-5555}
+PORT=${TV_ADB_PORT:-$(envval TV_ADB_PORT)}; PORT=${PORT:-5555}
 [ -n "$IP" ] || { echo "tv_private_ip_address missing in .env" >&2; exit 2; }
 SERIAL="$IP:$PORT"
 
@@ -47,12 +50,26 @@ redact() {
   sh "$REDACT"
 }
 
+# Runs adb with output captured, prints it redacted, returns adb's status.
+# A plain `adb … | redact` would return redact's status, which is always 0.
+OUT=$(mktemp "${TMPDIR:-/tmp}/tvsh.XXXXXX")
+trap 'rm -f "$OUT"' EXIT
+run() {
+  rc=0
+  "$ADB" "$@" >"$OUT" 2>&1 || rc=$?
+  redact <"$OUT"
+  return "$rc"
+}
+
 cmd=${1:-}; [ $# -gt 0 ] && shift
 case "$cmd" in
   connect)
-    "$ADB" connect "$SERIAL" 2>&1 | sh "$REDACT" ;;
+    rc=0; "$ADB" connect "$SERIAL" >"$OUT" 2>&1 || rc=$?
+    sh "$REDACT" <"$OUT"
+    # adb connect exits 0 even when it could not connect.
+    [ "$rc" -eq 0 ] && grep -qE '(already )?connected to' "$OUT" || exit 1 ;;
   info)
-    "$ADB" -s "$SERIAL" shell '
+    run -s "$SERIAL" shell '
       echo "model=$(getprop ro.product.model)"
       echo "device=$(getprop ro.product.device)"
       echo "manufacturer=$(getprop ro.product.manufacturer)"
@@ -63,20 +80,23 @@ case "$cmd" in
       echo "abi=$(getprop ro.product.cpu.abilist)"
       echo "display=$(wm size | tail -n1) $(wm density | tail -n1)"
       echo "home=$(cmd package resolve-activity --brief -c android.intent.category.HOME -a android.intent.action.MAIN | tail -n1)"
-      echo "shell_user=$(id -un)"' 2>&1 | redact ;;
+      echo "shell_user=$(id -un)"' ;;
   shell)
-    "$ADB" -s "$SERIAL" shell "$@" 2>&1 | redact ;;
+    run -s "$SERIAL" shell "$@" ;;
   screenshot)
     out=${1:-"$ROOT/captures/screen-$(date +%Y%m%d-%H%M%S).png"}
     mkdir -p "$(dirname -- "$out")"
-    "$ADB" -s "$SERIAL" exec-out screencap -p > "$out"
+    rc=0; "$ADB" -s "$SERIAL" exec-out screencap -p >"$out" 2>"$OUT" || rc=$?
+    if [ "$rc" -ne 0 ] || [ ! -s "$out" ]; then
+      sh "$REDACT" <"$OUT" >&2; rm -f "$out"; exit "$(( rc ? rc : 1 ))"
+    fi
     echo "$out" ;;
   install)
-    "$ADB" -s "$SERIAL" install -r "$(winpath "$1")" 2>&1 | redact ;;
+    run -s "$SERIAL" install -r "$(winpath "$1")" ;;
   push)
-    "$ADB" -s "$SERIAL" push "$(winpath "$1")" "$2" 2>&1 | redact ;;
+    run -s "$SERIAL" push "$(winpath "$1")" "$2" ;;
   adb)
-    "$ADB" -s "$SERIAL" "$@" 2>&1 | redact ;;
+    run -s "$SERIAL" "$@" ;;
   *)
-    sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+    sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
 esac

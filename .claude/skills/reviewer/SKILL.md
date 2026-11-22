@@ -34,7 +34,7 @@ Read `AGENTS.md` in full, especially:
 - **Forbidden list** — no root, flashing, `/system` writes, factory reset,
   disabling SystemUI / installer / settings / the only launcher / network /
   `adbd`, or touching Netflix/DRM/ESN.
-- **Device** — Android 11 (API 30), patch 2024-02-05, kernel 4.9.262,
+- **Device** — Android 11 (API 30), patch 2024-02-05, kernel 4.9.269,
   `shell` user over network ADB.
 
 Skim `CHANGE_HISTORY.md` and Tracked Issues for this area's history (reverts,
