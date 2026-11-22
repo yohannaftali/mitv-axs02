@@ -23,6 +23,7 @@ access, and it opens in about half a second.
   switches input; the dot turns green while the input is sending a picture.
 - **Top right**: network status (Ethernet or Wi-Fi) and the ☰ menu (Settings,
   Play Store, Home settings, All apps, Reset app order).
+- **Screensaver**: AXS Clock, a large clock and date on black.
 - Ads, tracking and unused Xiaomi/Google apps are disabled, and system
   animations run twice as fast.
 
@@ -171,6 +172,7 @@ recover if something goes wrong.
 | [`changes/2-debloat`](changes/2-debloat/README.md) | Disables 14 ad, tracking and unused preinstalled apps (needs #1); screensaver to built-in Colors |
 | [`changes/3-animations`](changes/3-animations/README.md) | System animations at 0.5x |
 | [`changes/15-tv-bro`](changes/15-tv-bro/README.md) | TV Bro browser, installed from its verified GitHub release |
+| [`changes/32-clock-screensaver`](changes/32-clock-screensaver/README.md) | **AXS Clock** screensaver: large time and date on black, moves once a minute; 13 KB, no permissions |
 
 Building AXS Home needs the Android SDK (build-tools and a platform) and a JDK;
 `sh apps/home/build.sh` uses them directly, with no Gradle.
