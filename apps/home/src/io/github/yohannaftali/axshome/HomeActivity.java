@@ -1,5 +1,6 @@
 package io.github.yohannaftali.axshome;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
@@ -68,7 +69,9 @@ public final class HomeActivity extends Activity {
     private final Runnable startWaves = this::startWaves;
 
     private FrameLayout root;
-    private WaveView waves;
+    private Backdrop backdrop;
+    private SettingsPanel settingsPanel;
+    private String confStyle = StyleView.WAVES;
     private LinearLayout grid;
     private LinearLayout inputBar;
     private final Map<String, View> dots = new LinkedHashMap<>();
@@ -237,20 +240,90 @@ public final class HomeActivity extends Activity {
             }
         }
         ui.removeCallbacks(startWaves);
-        if (waves != null) waves.stop();
+        if (backdrop != null) backdrop.stop();
         super.onPause();
     }
 
     private void startWaves() {
         if (!resumed) return;
-        if (waves == null) {
-            waves = new WaveView(this, waveTop, waveAccent);
-            waves.setAlpha(0f);
-            root.addView(waves, 0, new FrameLayout.LayoutParams(
+        if (backdrop == null) {
+            backdrop = createBackdrop();
+            View v = backdrop.view();
+            v.setAlpha(0f);
+            root.addView(v, 0, new FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            waves.animate().alpha(1f).setDuration(400).start();
+            v.animate().alpha(1f).setDuration(400).start();
         }
-        waves.start();
+        backdrop.start();
+    }
+
+    // ---- wallpaper and clock settings (Home settings) ----
+
+    String currentWallpaper() {
+        String s = prefs().getString(SettingsPanel.PREF_WALLPAPER, confStyle);
+        if (SettingsPanel.CUSTOM.equals(s) && settings().customFile() == null) return confStyle;
+        return SettingsPanel.CUSTOM.equals(s) || StyleView.known(s) ? s : confStyle;
+    }
+
+    private Backdrop createBackdrop() {
+        String style = currentWallpaper();
+        if (SettingsPanel.CUSTOM.equals(style)) {
+            boolean sound = prefs().getBoolean(SettingsPanel.PREF_VIDEO_SOUND, false);
+            return new MediaBackdrop(this, settings().customFile(), sound, () -> {
+                Toast.makeText(this, "Cannot play this wallpaper file; using " + StyleView.title(confStyle),
+                        Toast.LENGTH_LONG).show();
+                File bad = settings().customFile();
+                if (bad != null && !bad.delete()) bad.deleteOnExit();
+                prefs().edit().putString(SettingsPanel.PREF_WALLPAPER, confStyle)
+                        .remove(SettingsPanel.PREF_CUSTOM_FILE).apply();
+                applyWallpaper();
+            });
+        }
+        return new StyleView(this, style, waveTop, waveAccent);
+    }
+
+    /** Replace the backdrop after a settings or config change. */
+    void applyWallpaper() {
+        if (backdrop != null) {
+            root.removeView(backdrop.view());
+            backdrop.release();
+            backdrop = null;
+        }
+        if (resumed) startWaves();
+    }
+
+    boolean clockIs24() {
+        if (prefs().contains(SettingsPanel.PREF_CLOCK24)) return prefs().getBoolean(SettingsPanel.PREF_CLOCK24, true);
+        return timeFormat.contains("H") || timeFormat.contains("k");
+    }
+
+    private SettingsPanel settings() {
+        if (settingsPanel == null) settingsPanel = new SettingsPanel(this, prefs());
+        return settingsPanel;
+    }
+
+    private static final int REQ_STORAGE = 1;
+    private Runnable storageGranted;
+    private Runnable storageDenied;
+
+    void withStoragePermission(Runnable granted, Runnable denied) {
+        if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            granted.run();
+            return;
+        }
+        storageGranted = granted;
+        storageDenied = denied;
+        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQ_STORAGE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int code, String[] permissions, int[] results) {
+        super.onRequestPermissionsResult(code, permissions, results);
+        if (code != REQ_STORAGE) return;
+        Runnable next = results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED ? storageGranted : storageDenied;
+        storageGranted = null;
+        storageDenied = null;
+        if (next != null) next.run();
     }
 
     @Override
@@ -291,10 +364,10 @@ public final class HomeActivity extends Activity {
         loadedStamp = stamp;
         parse(readConf());
         applyClockFormats();
-        if (waves != null) {
-            root.removeView(waves);
-            waves.stop();
-            waves = null;
+        if (backdrop != null) {
+            root.removeView(backdrop.view());
+            backdrop.release();
+            backdrop = null;
         }
         loadOrder();
         buildGrid();
@@ -350,6 +423,7 @@ public final class HomeActivity extends Activity {
                     dateFormat = field(e, 2).isEmpty() ? "EEEE, d MMMM" : field(e, 2);
                     break;
                 case "wallpaper":
+                    if (StyleView.known(field(e, 1))) confStyle = field(e, 1);
                     waveTop = parseColor(field(e, 2), waveTop);
                     waveAccent = parseColor(field(e, 3), waveAccent);
                     break;
@@ -359,10 +433,17 @@ public final class HomeActivity extends Activity {
         }
     }
 
-    /** Same format for both system modes: the TV has no 12/24-hour preference set. */
-    private void applyClockFormats() {
-        clock.setFormat12Hour(timeFormat);
-        clock.setFormat24Hour(timeFormat);
+    /**
+     * Same format for both system modes: the TV has no 12/24-hour preference set.
+     * A choice made in Home settings wins over the home.conf format.
+     */
+    void applyClockFormats() {
+        String time = timeFormat;
+        if (prefs().contains(SettingsPanel.PREF_CLOCK24)) {
+            time = prefs().getBoolean(SettingsPanel.PREF_CLOCK24, true) ? "HH:mm" : "h:mm a";
+        }
+        clock.setFormat12Hour(time);
+        clock.setFormat24Hour(time);
         date.setFormat12Hour(dateFormat);
         date.setFormat24Hour(dateFormat);
     }
@@ -626,6 +707,9 @@ public final class HomeActivity extends Activity {
                 case "allapps":
                     action = this::showAllApps;
                     break;
+                case "settings":
+                    action = () -> settings().show();
+                    break;
                 case "resetorder":
                     action = () -> {
                         prefs().edit().remove(PREF_ORDER).apply();
@@ -809,7 +893,7 @@ public final class HomeActivity extends Activity {
         }
     }
 
-    private TextView label(String text, int sp, int color, boolean bold) {
+    TextView label(String text, int sp, int color, boolean bold) {
         TextView t = new TextView(this);
         t.setText(text);
         t.setTextColor(color);
@@ -818,7 +902,7 @@ public final class HomeActivity extends Activity {
         return t;
     }
 
-    private StateListDrawable focusBg(int color, int radiusDp) {
+    StateListDrawable focusBg(int color, int radiusDp) {
         StateListDrawable bg = new StateListDrawable();
         GradientDrawable focused = rounded(color == 0 ? 0x33FFFFFF : color, Color.WHITE, radiusDp, 3);
         bg.addState(new int[]{android.R.attr.state_focused}, focused);
@@ -850,7 +934,7 @@ public final class HomeActivity extends Activity {
         }
     }
 
-    private int dp(int v) {
+    int dp(int v) {
         return Math.round(v * getResources().getDisplayMetrics().density);
     }
 }

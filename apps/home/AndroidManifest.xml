@@ -9,6 +9,8 @@
 
     <!-- Read-only network status for the top bar icon; there is no INTERNET permission. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Own wallpaper files from USB drives and Download/Pictures/Movies (asked once). -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <!-- targetSdk 30 package visibility: needed to read other apps' banners and launch intents. -->
     <queries>
