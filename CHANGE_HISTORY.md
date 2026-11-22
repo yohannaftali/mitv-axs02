@@ -3,6 +3,16 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — feat(systemui): market and weather panel on the AXS Clock screensaver
+- Issue #33 created on GitHub (depends on #32)
+- Scope: systemui
+- Labels: enhancement, systemui
+
+## [2026-11-22] — feat(systemui): AXS Clock screensaver with large clock and date
+- Issue #32 created on GitHub
+- Scope: systemui
+- Labels: enhancement, systemui
+
 ## [2026-11-22] — feat(launcher): modern app tiles with focus ring, even row and sideways scrolling (#29)
 - Issue #29
 - Files: apps/home/src/.../HomeActivity.java, changes/1-fast-home/README.md
