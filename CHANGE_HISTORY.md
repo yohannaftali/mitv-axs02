@@ -9,7 +9,7 @@ names — see `AGENTS.md` → Private data.
 - Iterations with the owner on the TV: name beside the tile, then under it left-aligned, then centred (final)
 - Verified on TV: first, middle and last tile (all on screen with five apps), name placement, settle when moving to the inputs, move mode (amber, enlarged), cold start 609–630 ms, no crash
 - Not verified: reboot
-- TV state left: applied (branch 44-ps5-focus, not merged yet)
+- TV state left: applied
 
 ## [2026-11-22] — feat(launcher): Aerial TV card and tighter home layout (#42)
 - Issue #42

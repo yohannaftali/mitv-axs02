@@ -135,4 +135,4 @@ Rules:
 | #38 | feat(launcher): System monitor page with live CPU, RAM, storage and a top-style app list | closed | 2026-11-22 |
 | #40 | feat(apps): Phone remote — QR code opens a browser remote and keyboard served by the TV | closed | 2026-11-22 |
 | #42 | feat(launcher): Aerial TV card before HDMI 1 in the inputs bar | closed | 2026-11-22 |
-| #44 | feat(launcher): console-style enlarged focus with centred name in the apps row | ready-for-review | 2026-11-22 |
+| #44 | feat(launcher): console-style enlarged focus with centred name in the apps row | closed | 2026-11-22 |
