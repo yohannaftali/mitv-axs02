@@ -48,8 +48,12 @@ Rules:
    `pm list`, `uiautomator dump`) goes through `scripts/redact.sh` before it is
    shown, saved in the repo or posted. Raw captures stay in `captures/`
    (git-ignored).
-4. Screenshots (`captures/*.png`) can show account and profile names. They are
-   never committed or uploaded. Describe them in text instead.
+4. Screenshots (`captures/*.png`) can show account and profile names. Raw
+   captures are never committed or uploaded; describe them in text instead.
+   Exception (owner's decision, 2026-11-22): reviewed screenshots of AXS
+   Home's own screens may be committed to `docs/screenshots/` after
+   checking each one shows no account or profile name, no personal photo or
+   video, no network name and no other app's content.
 5. Do not read, change, spoof or work around the Netflix ESN, DRM (Widevine)
    or any app's licence checks.
 6. `.githooks/pre-commit` blocks commits that contain `.env` values, `.env`

@@ -3,6 +3,11 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — docs: README screenshots of AXS Home
+- Files: README.md ("What it looks like"), docs/screenshots/*.webp (Waves, Orbit, Pop, Bloom, Home settings; 1280 px, 17–33 KB each), AGENTS.md (rule 4 exception for reviewed AXS Home screenshots, owner's decision)
+- Each screenshot reviewed: only AXS Home tiles, clock, date, inputs and the network icon; no account, profile or network name
+- Menu and rearrange screenshots not added: the TV went to standby (ADB port closed) during capture
+
 ## [2026-11-22] — feat(launcher): Home settings, built-in and own wallpapers (#24, #25, #26)
 - Issues #24, #25, #26 (one branch and PR, because they share the settings screen and wallpaper code)
 - Files: apps/home/src/…/SettingsPanel.java, StyleView.java, MediaBackdrop.java, Backdrop.java (new; WaveView.java replaced by StyleView), HomeActivity.java, AndroidManifest.xml (READ_EXTERNAL_STORAGE), config/home.conf, changes/1-fast-home/README.md, README.md

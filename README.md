@@ -6,6 +6,34 @@ Launcher, system settings, animations, display density, hidden or disabled
 preinstalled apps: every change ships with an `apply`, a `revert` and a
 `check` script so it can always be undone.
 
+## What it looks like
+
+**AXS Home** replaces the stock home screen: your apps in one row, your
+consoles and TV inputs one press away along the bottom, a clock, network
+status and an animated wallpaper. No ads, no recommendations, no internet
+access, and it opens in about half a second.
+
+![AXS Home with the Waves wallpaper: clock, apps row, inputs bar](docs/screenshots/home-waves.webp)
+
+- **Apps**: YouTube, Netflix, Prime Video, YouTube Music, Browser (TV Bro).
+  Long-press OK to rearrange them on the TV.
+- **Inputs**: PS5 / HDMI 1, Xbox / HDMI 2, Nintendo Switch / HDMI 3, AV. OK
+  switches input; the dot turns green while the input is sending a picture.
+- **Top right**: network status (Ethernet or Wi-Fi) and the ☰ menu (Settings,
+  Play Store, Home settings, All apps, Reset app order).
+- Ads, tracking and unused Xiaomi/Google apps are disabled, and system
+  animations run twice as fast.
+
+Built-in wallpapers (original designs) — or use your own image, GIF or video:
+
+| Orbit | Pop | Bloom |
+|---|---|---|
+| ![Orbit wallpaper](docs/screenshots/home-orbit.webp) | ![Pop wallpaper](docs/screenshots/home-pop.webp) | ![Bloom wallpaper](docs/screenshots/home-bloom.webp) |
+
+Home settings — clock format, wallpaper, your own file, video sound:
+
+![Home settings page](docs/screenshots/home-settings.webp)
+
 ## Target device
 
 | | |
