@@ -3,6 +3,21 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — feat(display): halve system animation durations (#3)
+- Issue #3
+- Files: changes/3-animations/
+- Verified on TV: apply (twice), check 0; revert deletes the unset key and matches baseline, check 1; revert twice; survives reboot
+- TV state left: applied
+
+## [2026-11-22] — feat(apps): disable ads, tracking and unused preinstalled apps (#2)
+- Issue #2, merged in PR #5
+- Files: changes/2-debloat/ (packages.txt lists the 14 packages)
+- Verified on TV: all disabled; Netflix, YouTube, Prime Video, Settings, Play Store open; HDMI switch; no crashes; screensaver moved to Colors; revert matches baseline; idempotent; survives reboot; boot now opens AXS Home directly (no PatchWall / Mi TV+ splash); MemAvailable after boot ~1008 MB (stock ~933 MB)
+- Not verified: physical remote buttons (ADB key events only)
+- TV state left: applied
+
+## [2026-11-22] — #1 closed: tested and merged in PR #4
+
 ## [2026-11-22] — feat(launcher): AXS Home with HDMI shortcuts (#1)
 - Issue #1
 - Files: apps/home/ (AndroidManifest.xml, res/, src/…/HomeActivity.java, config/home.conf, build.sh), changes/1-fast-home/, scripts/tv.sh (install, push, MSYS path fix), README.md, .gitignore

@@ -1,0 +1,4 @@
+# Baseline before #3 (captured 2026-11-22)
+window_animation_scale=1.0
+transition_animation_scale=1.0
+animator_duration_scale=null
