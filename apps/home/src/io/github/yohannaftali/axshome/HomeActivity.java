@@ -138,6 +138,8 @@ public final class HomeActivity extends Activity {
         LinearLayout content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
         content.setPadding(dp(48), dp(28), dp(48), dp(24));
+        content.setClipToPadding(false);
+        content.setClipChildren(false);
         root.addView(content, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
@@ -774,6 +776,7 @@ public final class HomeActivity extends Activity {
         list.setOrientation(LinearLayout.VERTICAL);
         list.setPadding(dp(48), dp(36), dp(48), dp(36));
         list.setClipChildren(false);
+        list.setClipToPadding(false);
         list.addView(label("All apps", 22, Color.WHITE, true));
         LinearLayout row = null;
         View first = null;
