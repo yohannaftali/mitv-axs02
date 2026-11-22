@@ -18,6 +18,9 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.media.tv.TvContract;
 import android.media.tv.TvInputManager;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -78,6 +81,19 @@ public final class HomeActivity extends Activity {
         }
     };
     private TextView menuButton;
+    private NetIcon net;
+    private ConnectivityManager connectivity;
+    private final ConnectivityManager.NetworkCallback netCallback = new ConnectivityManager.NetworkCallback() {
+        @Override
+        public void onCapabilitiesChanged(Network network, NetworkCapabilities caps) {
+            showNetwork(caps);
+        }
+
+        @Override
+        public void onLost(Network network) {
+            showNetwork(null);
+        }
+    };
     private TextClock clock;
     private TextClock date;
     private String timeFormat = "HH:mm";
@@ -136,6 +152,7 @@ public final class HomeActivity extends Activity {
 
         setContentView(root);
         tvInputs = (TvInputManager) getSystemService(Context.TV_INPUT_SERVICE);
+        connectivity = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
         IntentFilter f = new IntentFilter();
         f.addAction(Intent.ACTION_PACKAGE_ADDED);
@@ -174,6 +191,10 @@ public final class HomeActivity extends Activity {
         menuButton.setContentDescription("Menu");
         menuButton.setBackground(focusBg(0x00000000, 24));
         menuButton.setOnClickListener(v -> showMenu());
+        net = new NetIcon(this);
+        LinearLayout.LayoutParams netLp = new LinearLayout.LayoutParams(dp(36), dp(36));
+        netLp.rightMargin = dp(16);
+        bar.addView(net, netLp);
         bar.addView(menuButton, new LinearLayout.LayoutParams(dp(56), dp(56)));
         return bar;
     }
@@ -191,6 +212,13 @@ public final class HomeActivity extends Activity {
         refresh();
         if (tvInputs != null) {
             tvInputs.registerCallback(inputCallback, ui);
+        }
+        if (connectivity != null) {
+            Network active = connectivity.getActiveNetwork();
+            showNetwork(active == null ? null : connectivity.getNetworkCapabilities(active));
+            connectivity.registerDefaultNetworkCallback(netCallback, ui);
+        }
+        if (tvInputs != null) {
             for (Map.Entry<String, View> d : dots.entrySet()) paintDot(d.getValue(), inputState(d.getKey()));
         }
         // The waves start only after the first frame, so they never delay the home screen.
@@ -201,6 +229,13 @@ public final class HomeActivity extends Activity {
     protected void onPause() {
         resumed = false;
         if (tvInputs != null) tvInputs.unregisterCallback(inputCallback);
+        if (connectivity != null) {
+            try {
+                connectivity.unregisterNetworkCallback(netCallback);
+            } catch (IllegalArgumentException ignored) {
+                // Not registered (onResume did not run).
+            }
+        }
         ui.removeCallbacks(startWaves);
         if (waves != null) waves.stop();
         super.onPause();
@@ -443,6 +478,30 @@ public final class HomeActivity extends Activity {
         if (!order.isEmpty()) focusTile(order.get(0));
         else if (!dots.isEmpty()) ((View) dots.values().iterator().next().getParent()).requestFocus();
         else menuButton.requestFocus();
+    }
+
+    // ---- network status ----
+
+    private void showNetwork(NetworkCapabilities caps) {
+        if (caps == null) {
+            net.set(NetIcon.OFFLINE, false, 0);
+            return;
+        }
+        boolean validated = caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
+        if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+            net.set(NetIcon.WIFI, validated, wifiBars(caps.getSignalStrength()));
+        } else {
+            net.set(NetIcon.ETHERNET, validated, 0);
+        }
+    }
+
+    private static int wifiBars(int rssi) {
+        if (rssi == NetworkCapabilities.SIGNAL_STRENGTH_UNSPECIFIED) return 4;
+        if (rssi >= -55) return 4;
+        if (rssi >= -66) return 3;
+        if (rssi >= -77) return 2;
+        if (rssi >= -88) return 1;
+        return 0;
     }
 
     // ---- inputs bar (bottom) ----
