@@ -3,6 +3,19 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — fix(tooling): scripts/tv.sh returns adb exit status (#8)
+- Issue #8
+- Files: scripts/tv.sh; changes/{1-fast-home,2-debloat,3-animations}/check.sh and revert.sh; changes/2-debloat/apply.sh; AGENTS.md; README.md; .claude/skills/coder/SKILL.md; .claude/skills/reviewer/SKILL.md (kernel 4.9.269)
+- tv.sh: adb output captured to a temp file, redacted, adb status returned; `connect` fails when adb could not connect; `screenshot` fails on an empty capture; `TV_ADB_PORT` env override
+- check.sh: 0 applied, 1 not applied, 2 cannot check; revert.sh never reports success unless check.sh says 1
+- Verified: exit 3 / 0 / 1 propagate; stdout and stderr still redacted; unreachable TV (closed port) gives check 2 and every apply/revert fails without a success message; set -e stops at a failing step; on the TV, revert 3→2→1 (checks 1) and apply 1→2→3 (checks 0), no crashes
+- TV state left: all three applied
+
+## [2026-11-22] — fix(tooling): scripts/tv.sh hides adb exit status
+- Issue #8 created on GitHub (from the post-merge review of #1–#3: #1 and #2 pass with notes, #3 passes)
+- Scope: tooling
+- Labels: bug, tooling
+
 ## [2026-11-22] — docs: model name is MiTV-AXSO2 (letter O)
 - README.md, AGENTS.md, skill descriptions and scripts/tv.sh corrected; repo name `mitv-axs02` unchanged
 

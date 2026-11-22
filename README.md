@@ -108,7 +108,7 @@ git config core.hooksPath .githooks
 |---|---|
 | `tv_private_ip_address` | the TV's IP from step 4 |
 | `netflix_esn` | optional; only used so the redactor can hide it |
-| `TV_ADB_PORT` | optional, default `5555` |
+| `TV_ADB_PORT` | optional, default `5555` (an environment variable of the same name overrides it) |
 | `ADB` | optional full path to `adb` if it is not on `PATH` |
 
 Then, from Git Bash (Windows) or any POSIX shell:
@@ -220,6 +220,7 @@ as part of this project.
 | `no route to host` / timeout | Wrong IP or the TV is on another network/VLAN; recheck step 4. |
 | `adb: command not found` | Install Platform-Tools (step 1) or set `ADB=` in `.env`. |
 | `device offline` | `adb disconnect`, then connect again; if it persists, toggle USB debugging. |
+| A `check.sh` prints `cannot check` and exits 2 | The TV is off, asleep or ADB is not authorised; nothing was changed or verified. Run `sh scripts/tv.sh connect` and retry. |
 
 ---
 

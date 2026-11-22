@@ -8,9 +8,12 @@ TV="$HERE/../../scripts/tv.sh"
 PKGS=$(grep -v '^#' "$HERE/packages.txt" | tr '\n' ' ')
 
 # AXS Home (#1) must be HOME first: PatchWall is on the list.
-if ! sh "$HERE/../1-fast-home/check.sh" >/dev/null; then
-  echo "apply: apply #1 (changes/1-fast-home) first" >&2; exit 1
-fi
+rc=0; sh "$HERE/../1-fast-home/check.sh" >/dev/null || rc=$?
+case $rc in
+  0) ;;
+  1) echo "apply: apply #1 (changes/1-fast-home) first" >&2; exit 1 ;;
+  *) echo "apply: cannot reach TV" >&2; exit 2 ;;
+esac
 
 sh "$TV" shell "
   settings put secure screensaver_components com.android.dreams.basic/.Colors

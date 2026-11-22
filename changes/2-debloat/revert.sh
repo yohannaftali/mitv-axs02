@@ -12,7 +12,10 @@ sh "$TV" shell "
     pm path \$p >/dev/null 2>&1 && pm enable \$p >/dev/null
   done
   settings put secure screensaver_components '$SAVER'"
-if sh "$HERE/check.sh" >/dev/null; then
-  echo "revert: packages still disabled" >&2; exit 1
-fi
+rc=0; sh "$HERE/check.sh" >/dev/null || rc=$?
+case $rc in
+  0) echo "revert: packages still disabled" >&2; exit 1 ;;
+  1) ;;
+  *) echo "revert: cannot verify, TV unreachable" >&2; exit 2 ;;
+esac
 echo "reverted: $(echo "$ENABLE" | wc -w | tr -d ' ') packages enabled, screensaver $SAVER"
