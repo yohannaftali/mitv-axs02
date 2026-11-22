@@ -169,10 +169,12 @@ final class StyleView extends View implements Choreographer.FrameCallback, Backd
             Path area = new Path();
             Path edge = new Path();
             area.moveTo(0, bh);
-            for (int x = 0; x <= bw; x += 4) {
+            // Step 4 px, but always end exactly on the right edge so the tiled copies meet without a gap.
+            for (int x = 0; ; x = Math.min(x + 4, bw)) {
                 float y = (float) (mid + amp * Math.sin(x * k + i * 1.3) + amp * 0.3 * Math.sin(x * k2));
                 area.lineTo(x, y);
                 if (x == 0) edge.moveTo(x, y); else edge.lineTo(x, y);
+                if (x == bw) break;
             }
             area.lineTo(bw, bh);
             area.close();
