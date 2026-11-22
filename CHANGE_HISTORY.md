@@ -3,6 +3,19 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — feat(apps): install TV Bro browser from its verified GitHub release (#15)
+- Issue #15
+- Files: changes/15-tv-bro/ (apply, check, revert, baseline, pinned.txt, README), apps/home/config/home.conf (Browser tile), README.md, .gitignore (.cache/)
+- Pinned: v3.0.7 generic-geckoExcluded (3.8 MB, uses the TV's WebView, Chromium 139); SHA-256 equals GitHub's published digest; signing cert identical on 3.0.6 and 3.0.7
+- Verified: tampered APK and wrong-signer APK refused; unreachable TV gives check/revert 2; on the TV install twice, Browser tile opens TV Bro, desktop Wikipedia loads, cursor and scrolling work with the D-pad; revert uninstalls (check 1, verify-only 0), revert again, re-install, tile back; no crashes
+- Not verified: text entry with the remote (automated cursor placement too imprecise)
+- TV state left: TV Bro installed, Browser tile on AXS Home
+
+## [2026-11-22] — Issues #14 and #15 filed: AXS Home redesign, TV Bro browser
+- #14 feat(launcher): AXS Home redesign (clock/date, inputs sidebar with HDMI 1–3 + AV, ☰ menu, on-TV app reordering, async wave background) — labels enhancement, launcher
+- #15 feat(apps): install TV Bro (geckoExcluded build, verified SHA-256 and signing cert) — labels enhancement, apps
+- Decisions: TikTok skipped; original gamepad/HDMI/AV icons instead of console logos
+
 ## [2026-11-22] — fix(apps,display): #2 and #3 revert.sh verify every baseline value (#12)
 - Issue #12
 - Files: changes/2-debloat/revert.sh, changes/3-animations/revert.sh, changes/2-debloat/README.md, changes/3-animations/README.md, AGENTS.md (new value-by-value revert rule), .claude/skills/coder/SKILL.md

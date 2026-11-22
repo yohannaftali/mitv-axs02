@@ -1,0 +1,7 @@
+# TV Bro release pinned by #15. apply.sh installs only this exact file.
+repo=truefedex/tv-bro
+tag=v3.0.7
+asset=tvbro-3.0.7-generic-geckoExcluded.apk
+sha256=c35a5ade8681e34be2a1b40071b1326a213c9235f098c1776b9acb49ac572819
+cert_sha256=1e5124be7e7fcb7a6462b47a42a8567863c6fccc6fe7708cd278be4f43047c75
+package=com.phlox.tvwebbrowser
