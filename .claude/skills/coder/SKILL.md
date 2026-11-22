@@ -111,7 +111,7 @@ Create `changes/<id>-<slug>/`:
 |---|---|
 | `baseline.txt` | redacted state before the change (the values `apply.sh` will alter) |
 | `apply.sh` | makes the change; idempotent |
-| `revert.sh` | restores the baseline exactly; idempotent; safe on an unchanged TV |
+| `revert.sh` | restores the baseline exactly, then reads every value back and compares it with `baseline.txt` (exit 1 on a difference, 2 on a failed TV step); idempotent; safe on an unchanged TV |
 | `check.sh` | exit 0 if the change is in place, 1 if not, 2 if the TV cannot be checked; prints a one-line reason |
 | `README.md` | what it does, what the user sees, lock-out risk and recovery |
 

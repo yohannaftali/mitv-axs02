@@ -3,6 +3,18 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — fix(apps,display): #2 and #3 revert.sh verify every baseline value (#12)
+- Issue #12
+- Files: changes/2-debloat/revert.sh, changes/3-animations/revert.sh, changes/2-debloat/README.md, changes/3-animations/README.md, AGENTS.md (new value-by-value revert rule), .claude/skills/coder/SKILL.md
+- revert.sh: validates baseline values before any TV command; TV steps record every failure (exit 2); reads every package state, the screensaver and the three scales back and lists differences (exit 1); VERIFY_ONLY=1 compares read-only; #2 handles disabled/absent baseline entries and an unset screensaver
+- Verified: verify-only lists all 15 / 3 differences on the applied TV and passes against a matching baseline; injected or missing baseline values exit 1 before any TV command; unreachable TV exits 2; on the TV revert #3 and #2 (equal baseline, check 1), revert again, verify-only 0, re-apply (check 0); #1 untouched; no crashes
+- TV state left: #1–#3 applied
+
+## [2026-11-22] — fix(apps,display): #2 and #3 revert.sh verify every baseline value
+- Issue #12 created on GitHub (from the post-merge review of #8 / #10: #8 pass with notes, #10 pass)
+- Scope: apps, display
+- Labels: bug, apps, display
+
 ## [2026-11-22] — fix(launcher): AXS Home revert.sh restores baseline.txt (#10)
 - Issue #10 created on GitHub (from the post-merge review of #1) and fixed
 - Files: changes/1-fast-home/revert.sh

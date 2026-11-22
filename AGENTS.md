@@ -95,6 +95,10 @@ Rules:
 - `scripts/tv.sh` exits with adb's status (the remote command's status for
   `shell`), so `set -e` stops a script at the first failed TV step. Check its
   status; never pipe it into something that hides it.
+- `revert.sh` confirms the TV equals `baseline.txt` value by value (every
+  package state and setting it restores) and lists any difference; `check.sh`
+  exiting 1 is not enough, because it only shows the change is not fully in
+  place. A failing TV step exits 2. `VERIFY_ONLY=1` runs just the comparison.
 - Changes are idempotent: running `apply.sh` twice is safe; `revert.sh` on
   an unchanged TV is safe.
 - Use Android 11 (API 30) commands and APIs only; check that a command exists
@@ -110,3 +114,4 @@ Rules:
 | #3 | feat(display): halve system animation durations | closed | 2026-11-22 |
 | #8 | fix(tooling): scripts/tv.sh hides adb exit status | closed | 2026-11-22 |
 | #10 | fix(launcher): AXS Home revert.sh restores baseline.txt instead of hard-coded state | closed | 2026-11-22 |
+| #12 | fix(apps,display): #2 and #3 revert.sh verify every baseline value | closed | 2026-11-22 |

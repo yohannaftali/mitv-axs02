@@ -37,6 +37,7 @@ Needs #1 (AXS Home) applied first, because PatchWall is on the list.
 sh changes/2-debloat/apply.sh
 sh changes/2-debloat/check.sh     # exit 0 = all listed packages disabled
 sh changes/2-debloat/revert.sh    # re-enable what baseline.txt says was enabled
+VERIFY_ONLY=1 sh changes/2-debloat/revert.sh   # read-only: list where the TV differs from baseline.txt
 ```
 
 To keep an app, delete its line from `packages.txt` and run

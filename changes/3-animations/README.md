@@ -9,6 +9,7 @@ sh changes/3-animations/apply.sh            # 0.5x
 SCALE=0 sh changes/3-animations/apply.sh    # no animations at all
 sh changes/3-animations/check.sh            # exit 0 = applied (pass the same SCALE)
 sh changes/3-animations/revert.sh           # back to baseline.txt
+VERIFY_ONLY=1 sh changes/3-animations/revert.sh   # read-only: compare the TV with baseline.txt
 ```
 
 Baseline on this TV: `1.0`, `1.0`, unset. `revert.sh` deletes a key that was
