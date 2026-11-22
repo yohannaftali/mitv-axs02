@@ -3,6 +3,13 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — fix(launcher): AXS Home revert.sh restores baseline.txt (#10)
+- Issue #10 created on GitHub (from the post-merge review of #1) and fixed
+- Files: changes/1-fast-home/revert.sh
+- revert.sh reads home_activity, google_tvlauncher_enabled and axshome_installed from baseline.txt, validates them before any TV command, re-enables the Google launcher / uninstalls AXS Home only as the baseline says, and confirms HOME equals the baseline
+- Verified: missing keys and an injected value abort before any TV command; unreachable TV exits 2 with a message; on the TV revert (HOME = baseline, launcher enabled, AXS Home uninstalled, check 1), revert again, re-apply (check 0); #2 and #3 untouched
+- TV state left: #1–#3 applied
+
 ## [2026-11-22] — fix(tooling): scripts/tv.sh returns adb exit status (#8)
 - Issue #8
 - Files: scripts/tv.sh; changes/{1-fast-home,2-debloat,3-animations}/check.sh and revert.sh; changes/2-debloat/apply.sh; AGENTS.md; README.md; .claude/skills/coder/SKILL.md; .claude/skills/reviewer/SKILL.md (kernel 4.9.269)
