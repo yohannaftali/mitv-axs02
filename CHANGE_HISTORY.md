@@ -3,6 +3,14 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — feat(systemui): AXS Clock screensaver with large clock and date (#32)
+- Issue #32
+- Files: apps/clock/ (AndroidManifest.xml, build.sh, config/clock.conf, res/drawable/icon.xml, src/.../ClockDream.java), changes/32-clock-screensaver/ (apply, revert, check, baseline, README), README.md
+- New 13 KB app io.github.yohannaftali.axsclock: a DreamService with no requested permissions; time 150 sp and date on black, moves once a minute
+- Verified on TV: apply, check 0, dream via Somnambulator shows clock and date, moves after a minute, CPU ~0.3% of one core, a key wakes back to AXS Home, Settings → Screen saver lists AXS Clock, revert matches baseline (Colors, app removed), check 1, revert and apply idempotent; AXS Home still has no INTERNET
+- Not verified: reboot (both the setting and the app are persistent by design); real 15-minute idle start (used Start now / Somnambulator)
+- TV state left: applied
+
 ## [2026-11-22] — feat(systemui): market and weather panel on the AXS Clock screensaver
 - Issue #33 created on GitHub (depends on #32)
 - Scope: systemui

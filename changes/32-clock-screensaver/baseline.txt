@@ -1,0 +1,5 @@
+# Baseline before #32 (captured 2026-11-22, redacted)
+screensaver_components=com.android.dreams.basic/.Colors
+screensaver_enabled=1
+screensaver_activate_on_sleep=1
+axsclock_installed=0
