@@ -3,6 +3,16 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — feat(launcher): Home settings, built-in and own wallpapers (#24, #25, #26)
+- Issues #24, #25, #26 (one branch and PR, because they share the settings screen and wallpaper code)
+- Files: apps/home/src/…/SettingsPanel.java, StyleView.java, MediaBackdrop.java, Backdrop.java (new; WaveView.java replaced by StyleView), HomeActivity.java, AndroidManifest.xml (READ_EXTERNAL_STORAGE), config/home.conf, changes/1-fast-home/README.md, README.md
+- Home settings (☰): clock 24-hour / 12-hour AM-PM; wallpaper Waves / Orbit / Pop / Bloom / own file; play sound of video wallpapers (off by default)
+- Own files: on-TV browser for USB drives and Download / Pictures / Movies / DCIM (this TV has no system file picker, only a stub); file copied into the app folder; PNG, JPEG, WebP, animated GIF, animated WebP (AnimatedImageDrawable), MP4 (MediaPlayer on a TextureView, centre-cropped); a file that cannot be played is deleted and the default style returns
+- Verified on the TV: settings page and D-pad; 12-hour shows 3:45 PM, kept after app restart, back to 24-hour; each built-in style visually and at 11–12% of one core on home, 0 with YouTube open; storage permission prompt; PNG (0% CPU), GIF, animated WebP and MP4 animate (13–16% of one core) and stop with YouTube open; broken MP4 falls back without a crash; cold start median about 542 ms; no crashes; test files removed from the TV afterwards
+- Not verified: hearing video sound (the switch toggles; audio is for the owner to check); choices across a reboot (same SharedPreferences mechanism as the app order, verified in #14)
+- Limitation: picking a broken file replaces the previous own file, so the fallback is the default style, not the previous file
+- TV state left: Waves, 24-hour, video sound off
+
 ## [2026-11-22] — feat(launcher): network status icon next to the menu (#22)
 - Issue #22
 - Files: apps/home/src/…/NetIcon.java (new), HomeActivity.java, apps/home/AndroidManifest.xml (ACCESS_NETWORK_STATE), changes/1-fast-home/README.md, README.md

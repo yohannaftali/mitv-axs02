@@ -120,3 +120,6 @@ Rules:
 | #18 | feat(launcher): inputs bar at the bottom of AXS Home with connection dots | closed | 2026-11-22 |
 | #20 | fix(launcher): AXS Home clock in 24-hour format | closed | 2026-11-22 |
 | #22 | feat(launcher): network status icon next to the AXS Home menu | closed | 2026-11-22 |
+| #24 | feat(launcher): Home settings page with 12/24-hour clock choice | closed | 2026-11-22 |
+| #25 | feat(launcher): built-in animated wallpapers Waves, Orbit, Pop and Bloom | closed | 2026-11-22 |
+| #26 | feat(launcher): custom wallpapers from USB and Downloads (images, GIF/WebP, MP4) | closed | 2026-11-22 |

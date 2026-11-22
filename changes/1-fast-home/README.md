@@ -1,7 +1,8 @@
 # #1 — AXS Home: fast minimal home screen with HDMI shortcuts
 
-Replaces the Google TV home screen with **AXS Home** (`apps/home/`): a 33 KB
-app with one permission (read-only network status; no internet access), no ads
+Replaces the Google TV home screen with **AXS Home** (`apps/home/`): a 46 KB
+app with two permissions (read-only network status; reading media files for your
+own wallpaper) and no internet access, no ads
 and no recommendations.
 Layout since #18:
 
@@ -26,16 +27,29 @@ Layout since #18:
 - **Connection dot**: green while the input is sending a picture
   (`INPUT_STATE_CONNECTED`), grey otherwise; it updates live. This TV reports
   "standby" for every input, even an empty AV port, so standby counts as grey.
-- **Clock**: 24-hour (`HH:mm`) whatever the TV's setting; change it with the
-  `clock|<time format>|<date format>` line in `home.conf`.
+- **Clock**: 24-hour by default, whatever the TV's setting. ☰ → *Home settings* →
+  Clock switches between 24-hour (15:30) and 12-hour with AM/PM (3:30 PM); the
+  choice is kept. Without a choice, the `clock|<time format>|<date format>` line
+  in `home.conf` applies.
+- **Wallpaper** (☰ → *Home settings* → Wallpaper):
+  - Built-in, all original designs: **Waves** (blue flowing waves), **Orbit**
+    (green turning rings), **Pop** (red with drifting shapes), **Bloom** (soft
+    blue petals). Each is drawn once in the background and then only moved, so
+    it costs about 11–12% of one CPU core with home on screen and nothing while
+    another app is open.
+  - Your own file: *Choose a file…* browses USB drives and the TV's Download,
+    Pictures, Movies and DCIM folders (Android asks once for access to photos
+    and media). PNG, JPEG, WebP, animated GIF, animated WebP and MP4 work. The
+    file is copied into AXS Home's own folder, so it keeps working without
+    the USB drive. Videos loop muted unless *Play sound of video wallpapers* is
+    on. A file that cannot be played is removed and the default style returns.
 - **Network status** (left of ☰): Ethernet or Wi-Fi icon (Wi-Fi with signal
   bars); white = online, amber = connected without internet, grey with a slash
   = offline. Updates live. The Wi-Fi network name is never shown.
-- **☰ menu** (also the remote's MENU key): Settings, Google Play Store, All
-  apps, Reset app order. The remote's ALL_APPS key opens All apps directly.
-- **Waves**: each layer is drawn once in the background at half resolution and
-  then only slid sideways (20 fps), starting about 350 ms after the home screen
-  appears. They stop whenever another app is on screen.
+- **☰ menu** (also the remote's MENU key): Settings, Google Play Store, Home
+  settings, All apps, Reset app order. The remote's ALL_APPS key opens All apps directly.
+- The wallpaper starts about 350 ms after the home screen appears (never
+  before the tiles) and stops whenever another app is on screen.
 - Measured on the TV (#18): 502–531 ms after a full restart (before #14:
   ~681 ms), 26 MB of memory, about 13% of one CPU core while home is on screen
   and 0 while another app is open.
