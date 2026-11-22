@@ -35,9 +35,11 @@ Built-in wallpapers (original designs) — or use your own image, GIF or video:
 |---|---|---|
 | ![Orbit wallpaper](docs/screenshots/home-orbit.webp) | ![Pop wallpaper](docs/screenshots/home-pop.webp) | ![Bloom wallpaper](docs/screenshots/home-bloom.webp) |
 
-Home settings — clock format, wallpaper, your own file, video sound:
+Home settings (☰ → Home settings): the wallpaper keeps moving behind a
+translucent panel; Clock, Wallpaper (with live previews and your own file)
+and Sound, in the same focus style as the app tiles:
 
-![Home settings page](docs/screenshots/home-settings.webp)
+![Home settings page: categories on the left, wallpaper preview cards on a translucent panel](docs/screenshots/home-settings.webp)
 
 ## Target device
 

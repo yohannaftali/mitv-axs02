@@ -3,6 +3,15 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — feat(launcher): console-style Home settings page (#36)
+- Issue #36
+- Files: apps/home/src/.../SettingsPanel.java (rewritten layout; settings keys, file copy and storage logic unchanged), Glyph.java (new, line icons drawn in code), HomeActivity.java (hide home content while settings is open, accent colour, previews, close settings on HOME), StyleView.java (wave layers end exactly on the bitmap edge: fixes a thin seam where the tiled copies meet), changes/1-fast-home/README.md, README.md, docs/screenshots/home-settings.webp
+- Layout: transparent dialog over the live wallpaper (home tiles hidden), dark scrim, categories Clock / Wallpaper / Sound with icons, translucent panel with cards (white ring outside the card, 1.05x zoom, accent border and check for the selected one), wallpaper preview cards (focused one animates), toggle switch for video sound, file browser rows in the same style, soft fading scroll edges
+- Fixed during test: time centring in clock cards; cards drawing outside the panel when scrolled; duplicated cards when the focused card was removed during a re-render (focus jumped to a category and re-rendered re-entrantly); settings stacking when HOME was pressed with it open
+- Verified on TV: open from ☰; D-pad between categories and cards; file browser and BACK; Orbit picked and shown behind at once, accent follows, Waves restored; sound toggle (owner's value On kept); 12-hour shows on home, 24-hour restored; BACK/BACK closes and home reappears with focus on ☰; no crashes; no INTERNET; cold start 602–630 ms (avg 616, +7%); screenshot reviewed (AXS Home only)
+- Not verified: reboot; picking an own file from USB in the new browser (copy logic unchanged from #26)
+- TV state left: applied
+
 ## [2026-11-22] — feat(launcher): console-style Home settings page with frosted panel, categories and wallpaper previews
 - Issue #36 created on GitHub
 - Scope: launcher

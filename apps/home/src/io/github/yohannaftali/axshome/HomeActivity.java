@@ -76,6 +76,7 @@ public final class HomeActivity extends Activity {
     private Backdrop backdrop;
     private SettingsPanel settingsPanel;
     private String confStyle = StyleView.WAVES;
+    private LinearLayout content;
     private LinearLayout grid;
     private LinearLayout inputBar;
     private final Map<String, View> dots = new LinkedHashMap<>();
@@ -135,7 +136,7 @@ public final class HomeActivity extends Activity {
         root = new FrameLayout(this);
         root.setBackgroundColor(BG);
 
-        LinearLayout content = new LinearLayout(this);
+        content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
         content.setPadding(dp(48), dp(28), dp(48), dp(24));
         content.setClipToPadding(false);
@@ -298,6 +299,27 @@ public final class HomeActivity extends Activity {
         if (resumed) startWaves();
     }
 
+    /** Home settings shows only the wallpaper behind it, like a console's settings screen. */
+    void showHomeContent(boolean visible) {
+        content.animate().alpha(visible ? 1f : 0f).setDuration(150).start();
+    }
+
+    /** A small, still copy of a built-in style for Home settings; animates only while started. */
+    StyleView preview(String style) {
+        return new StyleView(this, style, waveTop, waveAccent);
+    }
+
+    /** Accent colour of the current wallpaper, used by Home settings. */
+    int accent() {
+        switch (currentWallpaper()) {
+            case StyleView.ORBIT: return 0xFF3BD16F;
+            case StyleView.POP: return 0xFFFF5A64;
+            case StyleView.BLOOM: return 0xFF6FB6FF;
+            case StyleView.WAVES: return waveAccent;
+            default: return 0xFF3D7BFF;
+        }
+    }
+
     boolean clockIs24() {
         if (prefs().contains(SettingsPanel.PREF_CLOCK24)) return prefs().getBoolean(SettingsPanel.PREF_CLOCK24, true);
         return timeFormat.contains("H") || timeFormat.contains("k");
@@ -338,6 +360,7 @@ public final class HomeActivity extends Activity {
         if (!intent.hasCategory(Intent.CATEGORY_HOME)) return;
         if (menu != null && menu.isShowing()) menu.dismiss();
         if (allApps != null && allApps.isShowing()) allApps.dismiss();
+        if (settingsPanel != null) settingsPanel.dismiss();
         if (moving != null) drop();
         focusFirst();
     }
@@ -979,7 +1002,7 @@ public final class HomeActivity extends Activity {
         return rounded(color, stroke, radiusDp, 1);
     }
 
-    private GradientDrawable rounded(int color, int stroke, int radiusDp, int strokeDp) {
+    GradientDrawable rounded(int color, int stroke, int radiusDp, int strokeDp) {
         GradientDrawable d = new GradientDrawable();
         d.setColor(color);
         d.setCornerRadius(dp(radiusDp));

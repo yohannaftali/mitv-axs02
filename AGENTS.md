@@ -131,4 +131,4 @@ Rules:
 | #29 | feat(launcher): modern app tiles with console-style focus ring, centred row and sideways scrolling | closed | 2026-11-22 |
 | #32 | feat(systemui): AXS Clock screensaver with large clock and date | closed | 2026-11-22 |
 | #33 | feat(systemui): market and weather panel on the AXS Clock screensaver | closed | 2026-11-22 |
-| #36 | feat(launcher): console-style Home settings page with frosted panel, categories and wallpaper previews | open | 2026-11-22 |
+| #36 | feat(launcher): console-style Home settings page with frosted panel, categories and wallpaper previews | closed | 2026-11-22 |

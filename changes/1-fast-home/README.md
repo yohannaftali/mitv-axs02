@@ -29,6 +29,13 @@ Layout since #18:
 - **Connection dot**: green while the input is sending a picture
   (`INPUT_STATE_CONNECTED`), grey otherwise; it updates live. This TV reports
   "standby" for every input, even an empty AV port, so standby counts as grey.
+- **Home settings** (☰ → *Home settings*): only the wallpaper stays visible,
+  dimmed, behind a translucent panel. Categories Clock, Wallpaper and Sound on
+  the left (UP/DOWN, RIGHT or OK to enter); option cards on the right with the
+  app tiles' white ring and zoom; the selected one has an accent border and a
+  check mark. Wallpaper cards are small previews (the focused one animates);
+  picking one changes the wallpaper behind the page at once. BACK returns to
+  the categories, then closes; HOME also closes it.
 - **Clock**: 24-hour by default, whatever the TV's setting. ☰ → *Home settings* →
   Clock switches between 24-hour (15:30) and 12-hour with AM/PM (3:30 PM); the
   choice is kept. Without a choice, the `clock|<time format>|<date format>` line
