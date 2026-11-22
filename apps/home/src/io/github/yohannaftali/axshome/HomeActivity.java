@@ -31,6 +31,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
@@ -57,9 +58,12 @@ import java.util.Set;
 public final class HomeActivity extends Activity {
     private static final String CONF = "home.conf";
     private static final String PREF_ORDER = "order";
-    private static final int COLS = 5;
-    private static final int TILE_W = 152;
-    private static final int TILE_H = 86;
+    private static final int TILE_RADIUS = 12;
+    private static final int RING_GAP = 5;
+    private static final int TILE_SPACING = 16;
+    private static final int SCROLL_BLEED = 12;
+    private static final int TILE_W = 148;
+    private static final int TILE_H = 83;
     private static final int DOT_ON = 0xFF3DDC84;
     private static final int DOT_OFF = 0xFF5F6673;
     private static final int BG = 0xFF05070D;
@@ -471,30 +475,49 @@ public final class HomeActivity extends Activity {
         prefs().edit().putString(PREF_ORDER, String.join(",", order)).apply();
     }
 
+    /**
+     * One row of tiles. Flexible spacers between tiles spread them evenly
+     * across the width when they fit; when they do not, the spacers shrink to
+     * their minimum and the row scrolls sideways to follow the focus.
+     */
     private void buildGrid() {
         grid.removeAllViews();
         tiles.clear();
         PackageManager pm = getPackageManager();
-        LinearLayout row = null;
+
+        HorizontalScrollView scroll = new HorizontalScrollView(this);
+        scroll.setFillViewport(true);
+        scroll.setHorizontalScrollBarEnabled(false);
+        scroll.setClipChildren(false);
+        scroll.setClipToPadding(false);
+        // Reach into the page margin so the zoomed edge tiles are not cut off.
+        scroll.setPadding(dp(SCROLL_BLEED), dp(14), dp(SCROLL_BLEED), dp(14));
+        LinearLayout.LayoutParams scrollLp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        scrollLp.leftMargin = -dp(SCROLL_BLEED);
+        scrollLp.rightMargin = -dp(SCROLL_BLEED);
+        grid.addView(scroll, scrollLp);
+
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setClipChildren(false);
+        row.setClipToPadding(false);
+        scroll.addView(row);
+
         for (int i = 0; i < order.size(); i++) {
-            if (i % COLS == 0) {
-                row = new LinearLayout(this);
-                row.setOrientation(LinearLayout.HORIZONTAL);
-                row.setClipChildren(false);
-                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                lp.bottomMargin = dp(20);
-                grid.addView(row, lp);
-            }
             String pkg = order.get(i);
             View t = appTile(pm, pkg, apps.get(pkg), pkg.equals(moving));
             if (t == null) continue;
-            t.setOnLongClickListener(v -> {
+            View ring = ringOf(t);
+            ring.setOnLongClickListener(v -> {
                 startMove(pkg);
                 return true;
             });
+            if (row.getChildCount() > 0) {
+                row.addView(new android.widget.Space(this), new LinearLayout.LayoutParams(dp(TILE_SPACING), 1, 1f));
+            }
             row.addView(t);
-            tiles.put(pkg, t);
+            tiles.put(pkg, ring);
         }
     }
 
@@ -514,8 +537,8 @@ public final class HomeActivity extends Activity {
             switch (code) {
                 case KeyEvent.KEYCODE_DPAD_LEFT: shift(-1); break;
                 case KeyEvent.KEYCODE_DPAD_RIGHT: shift(1); break;
-                case KeyEvent.KEYCODE_DPAD_UP: shift(-COLS); break;
-                case KeyEvent.KEYCODE_DPAD_DOWN: shift(COLS); break;
+
+
                 default: break;
             }
             return true;
@@ -767,8 +790,11 @@ public final class HomeActivity extends Activity {
             }
             View t = appTile(pm, all.get(i), null, false);
             if (t == null) continue;
-            row.addView(t);
-            if (first == null) first = t;
+            LinearLayout.LayoutParams tlp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            tlp.rightMargin = dp(TILE_SPACING);
+            row.addView(t, tlp);
+            if (first == null) first = ringOf(t);
         }
         ScrollView scroll = new ScrollView(this);
         scroll.setClipChildren(false);
@@ -798,6 +824,12 @@ public final class HomeActivity extends Activity {
 
     // ---- tiles and helpers ----
 
+    /**
+     * A tile is a column: a ring frame (the focusable part) around a rounded
+     * banner card, and the app name below, shown only while focused. The ring
+     * sits outside the card with a gap, so it stays visible on white banners.
+     * Callers that need the focusable view take {@link #ringOf(View)}.
+     */
     private View appTile(PackageManager pm, String pkg, String label, boolean isMoving) {
         Intent launch = launchIntent(pm, pkg);
         if (launch == null) return null;
@@ -809,17 +841,43 @@ public final class HomeActivity extends Activity {
         }
         String name = (label == null || label.isEmpty()) ? String.valueOf(pm.getApplicationLabel(ai)) : label;
 
+        LinearLayout column = new LinearLayout(this);
+        column.setOrientation(LinearLayout.VERTICAL);
+        column.setGravity(Gravity.CENTER_HORIZONTAL);
+        column.setClipChildren(false);
+        column.setClipToPadding(false);
+
+        FrameLayout ring = new FrameLayout(this);
+        ring.setId(View.generateViewId());
+        ring.setFocusable(true);
+        ring.setClickable(true);
+        ring.setContentDescription(name);
+        ring.setClipChildren(false);
+        ring.setPadding(dp(RING_GAP), dp(RING_GAP), dp(RING_GAP), dp(RING_GAP));
+        StateListDrawable ringBg = new StateListDrawable();
+        GradientDrawable on = rounded(0x00000000, isMoving ? MOVE_COLOR : Color.WHITE, TILE_RADIUS + RING_GAP, 3);
+        ringBg.addState(new int[]{android.R.attr.state_focused}, on);
+        ringBg.addState(new int[]{}, isMoving ? on : rounded(0x00000000, 0, TILE_RADIUS + RING_GAP));
+        ring.setBackground(ringBg);
+        column.addView(ring, new LinearLayout.LayoutParams(
+                dp(TILE_W + 2 * RING_GAP), dp(TILE_H + 2 * RING_GAP)));
+
         FrameLayout tile = new FrameLayout(this);
-        tile.setId(View.generateViewId());
-        tile.setFocusable(true);
-        tile.setClickable(true);
-        tile.setContentDescription(name);
-        tile.setPadding(dp(3), dp(3), dp(3), dp(3));
+        tile.setBackground(rounded(0xFF1C2028, 0, TILE_RADIUS));
         tile.setClipToOutline(true);
-        tile.setBackground(isMoving ? rounded(0xFF1C2028, MOVE_COLOR, 8, 4) : focusBg(0xFF1C2028, 8));
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(TILE_W), dp(TILE_H));
-        lp.setMargins(dp(8), 0, dp(8), 0);
-        tile.setLayoutParams(lp);
+        tile.setElevation(dp(6));
+        ring.addView(tile, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        TextView caption = label(name, 15, Color.WHITE, true);
+        caption.setGravity(Gravity.CENTER);
+        caption.setSingleLine(true);
+        caption.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        caption.setAlpha(isMoving ? 1f : 0f);
+        LinearLayout.LayoutParams capLp = new LinearLayout.LayoutParams(
+                dp(TILE_W + 2 * RING_GAP), ViewGroup.LayoutParams.WRAP_CONTENT);
+        capLp.topMargin = dp(12);
+        column.addView(caption, capLp);
 
         Drawable banner = pm.getApplicationBanner(ai);
         if (banner == null) {
@@ -850,18 +908,22 @@ public final class HomeActivity extends Activity {
                     Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL));
         }
         if (isMoving) {
-            tile.setScaleX(1.12f);
-            tile.setScaleY(1.12f);
-            tile.setElevation(dp(10));
+            ring.setScaleX(1.1f);
+            ring.setScaleY(1.1f);
         } else {
-            tile.setOnFocusChangeListener((v, has) -> {
-                float s = has ? 1.08f : 1f;
-                v.animate().scaleX(s).scaleY(s).setDuration(90).start();
-                v.setElevation(has ? dp(8) : 0);
+            ring.setOnFocusChangeListener((v, has) -> {
+                float s = has ? 1.1f : 1f;
+                v.animate().scaleX(s).scaleY(s).setDuration(110).start();
+                tile.setElevation(dp(has ? 14 : 6));
+                caption.animate().alpha(has ? 1f : 0f).setDuration(110).start();
             });
         }
-        tile.setOnClickListener(v -> launch(launch));
-        return tile;
+        ring.setOnClickListener(v -> launch(launch));
+        return column;
+    }
+
+    private static View ringOf(View tileColumn) {
+        return ((ViewGroup) tileColumn).getChildAt(0);
     }
 
     private static Intent launchIntent(PackageManager pm, String pkg) {
