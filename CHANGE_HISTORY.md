@@ -3,6 +3,15 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — feat(systemui): market and weather panel on the AXS Clock screensaver (#33)
+- Issue #33
+- Files: apps/clock/ (AndroidManifest.xml 1.1 with INTERNET, ACCESS_NETWORK_STATE, ACCESS_COARSE_LOCATION; config/clock.conf; src/.../ClockDream.java, Conf.java, Feed.java, StyleView.java and Backdrop.java copied from AXS Home), changes/33-market-panel/ (apply, revert, check, baseline, README), README.md, .env.example
+- Sources (free, keyless, credited on screen): CoinGecko (BTC/ETH/SOL), goldprice.dev (XAU, 15 min delayed), ECB via Frankfurter (IDR/EUR/GBP/JPY, daily), Open-Meteo (weather). NASDAQ, S&P 500, Dow, IHSG and oil left out: no free source allows it (owner chose clean sources only)
+- Owner requests during the work: dimmed animated background (Waves), city name on the weather line, update and FX dates in the footer; weather location automatic from the TV's network location (rounded to ~1 km), city fallback from `.env` pushed to the TV only
+- Verified on TV: apply, check 0, all 8 tickers and weather load, cached values show instantly, city name and dates shown, background animates; CPU ~9.5% of one core while showing, ~0.15% after waking; fetch thread gone after a key press; city fallback works with location revoked (test city, then restored); revert rebuilds the offline #32 app from git and matches baseline, check 1, #32 check still 0; revert and apply idempotent; AXS Home still has no INTERNET
+- Not verified: reboot; gold day change (needs a sample from the previous day); offline display with the network unplugged
+- TV state left: applied
+
 ## [2026-11-22] — feat(systemui): AXS Clock screensaver with large clock and date (#32)
 - Issue #32
 - Files: apps/clock/ (AndroidManifest.xml, build.sh, config/clock.conf, res/drawable/icon.xml, src/.../ClockDream.java), changes/32-clock-screensaver/ (apply, revert, check, baseline, README), README.md

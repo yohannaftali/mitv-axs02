@@ -23,7 +23,9 @@ access, and it opens in about half a second.
   switches input; the dot turns green while the input is sending a picture.
 - **Top right**: network status (Ethernet or Wi-Fi) and the ☰ menu (Settings,
   Play Store, Home settings, All apps, Reset app order).
-- **Screensaver**: AXS Clock, a large clock and date on black.
+- **Screensaver**: AXS Clock, a large clock and date over dimmed animated
+  waves, with the weather for your city and USD/IDR, EUR/USD, GBP/USD,
+  USD/JPY, gold, BTC, ETH and SOL (free sources, credited on screen).
 - Ads, tracking and unused Xiaomi/Google apps are disabled, and system
   animations run twice as fast.
 
@@ -141,6 +143,7 @@ git config core.hooksPath .githooks
 | `netflix_esn` | optional; only used so the redactor can hide it |
 | `TV_ADB_PORT` | optional, default `5555` (an environment variable of the same name overrides it) |
 | `ADB` | optional full path to `adb` if it is not on `PATH` |
+| `weather_city` | optional fallback city for the screensaver weather when the TV has no location (#33) |
 
 Then, from Git Bash (Windows) or any POSIX shell:
 
@@ -173,6 +176,7 @@ recover if something goes wrong.
 | [`changes/3-animations`](changes/3-animations/README.md) | System animations at 0.5x |
 | [`changes/15-tv-bro`](changes/15-tv-bro/README.md) | TV Bro browser, installed from its verified GitHub release |
 | [`changes/32-clock-screensaver`](changes/32-clock-screensaver/README.md) | **AXS Clock** screensaver: large time and date on black, moves once a minute; 13 KB, no permissions |
+| [`changes/33-market-panel`](changes/33-market-panel/README.md) | AXS Clock 1.1: animated background, weather (auto location) and 8 market tiles from free, credited sources; fetches only while showing (needs #32) |
 
 Building AXS Home needs the Android SDK (build-tools and a platform) and a JDK;
 `sh apps/home/build.sh` uses them directly, with no Gradle.

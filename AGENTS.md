@@ -130,4 +130,4 @@ Rules:
 | #26 | feat(launcher): custom wallpapers from USB and Downloads (images, GIF/WebP, MP4) | closed | 2026-11-22 |
 | #29 | feat(launcher): modern app tiles with console-style focus ring, centred row and sideways scrolling | closed | 2026-11-22 |
 | #32 | feat(systemui): AXS Clock screensaver with large clock and date | closed | 2026-11-22 |
-| #33 | feat(systemui): market and weather panel on the AXS Clock screensaver | open | 2026-11-22 |
+| #33 | feat(systemui): market and weather panel on the AXS Clock screensaver | closed | 2026-11-22 |
