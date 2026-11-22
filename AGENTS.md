@@ -4,7 +4,7 @@ Single source of truth for the `planner`, `coder`, `tester` and `reviewer`
 skills in `.claude/skills/`. Read it in full before working on an issue.
 
 ## Repository
-- remote: https://github.com/yohannaftali/mitv-axs02
+- remote: https://github.com/yohannaftali/mitv-axso2
 - platform: GitHub, **public**. Every commit, issue, comment and PR is
   world-readable. Use the logged-in `gh` CLI; there is no token in `.env`.
 - default branch: `main`; one branch per issue, `<id>-<short-slug>`.

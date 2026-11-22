@@ -1,4 +1,4 @@
-# mitv-axs02
+# mitv-axso2
 
 Reversible user-interface customisation for the **Xiaomi Mi TV MiTV-AXSO2**
 (Android TV 11), done entirely over ADB from a PC — no root, no flashing.
@@ -38,7 +38,7 @@ Home settings — clock format, wallpaper, your own file, video sound:
 
 | | |
 |---|---|
-| Model | MiTV-AXSO2 (letter O; the repo name `mitv-axs02` uses a zero) |
+| Model | MiTV-AXSO2 (letter O) |
 | Android | 11 (API 30), Android TV |
 | Security patch | 2024-02-05 |
 | Kernel | 4.9.269 |
@@ -124,8 +124,8 @@ approved computer has shell access to the TV.
 ### Option A — with the project scripts (recommended)
 
 ```sh
-git clone https://github.com/yohannaftali/mitv-axs02
-cd mitv-axs02
+git clone https://github.com/yohannaftali/mitv-axso2
+cd mitv-axso2
 cp .env.example .env              # then edit .env
 git config core.hooksPath .githooks
 ```

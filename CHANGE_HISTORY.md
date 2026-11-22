@@ -3,6 +3,11 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — chore: rename repository to mitv-axso2
+- GitHub repo renamed from `mitv-axs02` (zero) to `mitv-axso2` (letter O, matching the model); GitHub redirects the old URL
+- Files: README.md (title, clone commands, model note), AGENTS.md (remote), planner and reviewer skills (repo slug)
+- Local clones: `git remote set-url origin https://github.com/yohannaftali/mitv-axso2`
+
 ## [2026-11-22] — docs: README screenshots of AXS Home
 - Files: README.md ("What it looks like"), docs/screenshots/*.webp (Waves, Orbit, Pop, Bloom, Home settings; 1280 px, 17–33 KB each), AGENTS.md (rule 4 exception for reviewed AXS Home screenshots, owner's decision)
 - Each screenshot reviewed: only AXS Home tiles, clock, date, inputs and the network icon; no account, profile or network name
