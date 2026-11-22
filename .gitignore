@@ -4,3 +4,4 @@
 captures/
 *.log
 apps/*/build/
+.cache/
