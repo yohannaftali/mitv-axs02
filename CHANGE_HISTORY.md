@@ -8,7 +8,7 @@ names — see `AGENTS.md` → Private data.
 - Files: changes/15-tv-bro/ (apply, check, revert, baseline, pinned.txt, README), apps/home/config/home.conf (Browser tile), README.md, .gitignore (.cache/)
 - Pinned: v3.0.7 generic-geckoExcluded (3.8 MB, uses the TV's WebView, Chromium 139); SHA-256 equals GitHub's published digest; signing cert identical on 3.0.6 and 3.0.7
 - Verified: tampered APK and wrong-signer APK refused; unreachable TV gives check/revert 2; on the TV install twice, Browser tile opens TV Bro, desktop Wikipedia loads, cursor and scrolling work with the D-pad; revert uninstalls (check 1, verify-only 0), revert again, re-install, tile back; no crashes
-- Not verified: text entry with the remote (automated cursor placement too imprecise)
+- Not verified: text entry with the remote (automated cursor placement too imprecise); merged by owner decision, to be checked by the owner
 - TV state left: TV Bro installed, Browser tile on AXS Home
 
 ## [2026-11-22] — Issues #14 and #15 filed: AXS Home redesign, TV Bro browser
