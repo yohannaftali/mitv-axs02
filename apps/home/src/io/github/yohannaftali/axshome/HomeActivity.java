@@ -64,6 +64,12 @@ public final class HomeActivity extends Activity {
     private static final int SCROLL_BLEED = 12;
     private static final int TILE_W = 148;
     private static final int TILE_H = 83;
+    /** Console-style focus: the selected tile grows from its left edge, steps right, and its name sits under it. */
+    private static final float FOCUS_SCALE = 1.3f;
+    private static final int FOCUS_NUDGE = 10;
+    private static final int NAME_GAP = 12;
+    /** Right padding so the last tile can scroll fully into view when enlarged. */
+    private static final int FOCUS_ROOM = 72;
     private static final int DOT_ON = 0xFF3DDC84;
     private static final int DOT_OFF = 0xFF5F6673;
     private static final int BG = 0xFF05070D;
@@ -541,11 +547,30 @@ public final class HomeActivity extends Activity {
         scrollLp.rightMargin = -dp(SCROLL_BLEED + RING_GAP);
         grid.addView(scroll, scrollLp);
 
+        // The row packs from the left like a console's; the stage also holds the selected
+        // app's name, drawn under the enlarged tile.
+        FrameLayout stage = new FrameLayout(this);
+        stage.setClipChildren(false);
+        stage.setClipToPadding(false);
+        scroll.addView(stage);
+        rowScroll = scroll;
+
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setClipChildren(false);
         row.setClipToPadding(false);
-        scroll.addView(row);
+        // Room on the right so the last tile can scroll fully into view when enlarged.
+        row.setPadding(0, 0, dp(FOCUS_ROOM), 0);
+        stage.addView(row, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        rowName = label("", 22, Color.WHITE, true);
+        rowName.setSingleLine(true);
+        rowName.setShadowLayer(dp(6), 0, dp(1), 0xAA000000);
+        rowName.setAlpha(0f);
+        stage.addView(rowName, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        rowColumns.clear();
+        rowNames.clear();
 
         for (int i = 0; i < order.size(); i++) {
             String pkg = order.get(i);
@@ -556,10 +581,25 @@ public final class HomeActivity extends Activity {
                 startMove(pkg);
                 return true;
             });
-            if (row.getChildCount() > 0) {
-                row.addView(new android.widget.Space(this), new LinearLayout.LayoutParams(dp(TILE_SPACING), 1, 1f));
-            }
-            row.addView(t);
+            ((ViewGroup) t).getChildAt(1).setVisibility(View.GONE);
+            ring.setScaleX(1f);
+            ring.setScaleY(1f);
+            int index = rowColumns.size();
+            ring.setOnFocusChangeListener((v, has) -> {
+                if (has) {
+                    focusRow(index);
+                } else {
+                    ui.post(() -> {
+                        if (focusedRowIndex() < 0) focusRow(-1);
+                    });
+                }
+            });
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            if (row.getChildCount() > 0) lp.leftMargin = dp(TILE_SPACING);
+            row.addView(t, lp);
+            rowColumns.add(t);
+            rowNames.add(String.valueOf(ring.getContentDescription()));
             tiles.put(pkg, ring);
         }
     }
@@ -980,6 +1020,73 @@ public final class HomeActivity extends Activity {
         }
         ring.setOnClickListener(v -> launch(launch));
         return column;
+    }
+
+    private HorizontalScrollView rowScroll;
+    private TextView rowName;
+    private final List<View> rowColumns = new ArrayList<>();
+    private final List<String> rowNames = new ArrayList<>();
+
+    private int focusedRowIndex() {
+        for (int i = 0; i < rowColumns.size(); i++) {
+            if (ringOf(rowColumns.get(i)).isFocused()) return i;
+        }
+        return -1;
+    }
+
+    /**
+     * Console-style row: the focused tile grows to FOCUS_SCALE from its left edge and steps
+     * FOCUS_NUDGE to the right (so its outline is clear of the page edge), its name appears
+     * centred under it, and the tiles after it slide right to make room. f = -1 settles the row.
+     */
+    private void focusRow(int f) {
+        if (rowName == null) return;
+        if (f >= 0 && f < rowColumns.size() && rowColumns.get(f).getHeight() == 0) {
+            // First focus right after the row was built: place the name once it has a size.
+            rowScroll.post(() -> focusRow(f));
+            return;
+        }
+        float colW = dp(TILE_W + 2 * RING_GAP);
+        if (f >= 0) {
+            rowName.setText(rowNames.get(f));
+            rowName.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        }
+        float shift = dp(FOCUS_NUDGE) + (FOCUS_SCALE - 1f) * colW;
+        android.view.animation.DecelerateInterpolator ease = new android.view.animation.DecelerateInterpolator();
+        for (int i = 0; i < rowColumns.size(); i++) {
+            View c = rowColumns.get(i);
+            c.setPivotX(0);
+            c.setPivotY(c.getHeight() / 2f);
+            float s = i == f ? FOCUS_SCALE : 1f;
+            float tx = i == f ? dp(FOCUS_NUDGE) : (f >= 0 && i > f ? shift : 0);
+            c.animate().scaleX(s).scaleY(s).translationX(tx).setDuration(170).setInterpolator(ease).start();
+            View tile = ((ViewGroup) ringOf(c)).getChildAt(0);
+            tile.setElevation(dp(i == f ? 16 : 6));
+        }
+        if (f < 0) {
+            rowName.animate().alpha(0f).setDuration(120).start();
+            // Settled row fits on screen: scroll back so the first app is not left cut off.
+            View row = (View) rowColumns.get(0).getParent();
+            int view = rowScroll.getWidth() - rowScroll.getPaddingLeft() - rowScroll.getPaddingRight();
+            if (row.getWidth() - row.getPaddingRight() <= view) rowScroll.smoothScrollTo(0, 0);
+            return;
+        }
+        View c = rowColumns.get(f);
+        // Centred under the enlarged banner.
+        float x = c.getLeft() + dp(FOCUS_NUDGE) + FOCUS_SCALE * colW / 2f - rowName.getMeasuredWidth() / 2f;
+        float y = c.getTop() + c.getHeight() / 2f + FOCUS_SCALE * c.getHeight() / 2f + dp(NAME_GAP);
+        rowName.setTranslationX(x);
+        rowName.setTranslationY(y - dp(8));
+        rowName.setAlpha(0f);
+        rowName.animate().alpha(1f).translationY(y).setDuration(200).setInterpolator(ease).start();
+        // Keep the enlarged tile on screen (the scroll view only knows untranslated positions).
+        float right = c.getLeft() + dp(FOCUS_NUDGE) + FOCUS_SCALE * colW + dp(RING_GAP);
+        rowScroll.post(() -> {
+            int sx = rowScroll.getScrollX();
+            int view = rowScroll.getWidth() - rowScroll.getPaddingLeft() - rowScroll.getPaddingRight();
+            if (right - sx > view) rowScroll.smoothScrollTo((int) (right - view), 0);
+            else if (c.getLeft() < sx) rowScroll.smoothScrollTo(c.getLeft(), 0);
+        });
     }
 
     private static View ringOf(View tileColumn) {

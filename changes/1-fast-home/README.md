@@ -16,9 +16,11 @@ Layout since #18:
  | 🎮 PS5 ● HDMI 1 | 🎮 Xbox ● HDMI 2 | 🎮 Switch ● HDMI 3 | ○○○ AV ● |
 ```
 
-- **Apps row**: one row spread evenly across the screen; with more apps it
-  scrolls sideways. The selected banner zooms in with a white ring around it
-  and its name underneath. OK opens an app. HOME always lands on the first app.
+- **Apps row**: one row packed from the left, console style. The selected
+  banner grows to 1.3x from its left edge, steps a little to the right (so its
+  white ring never touches the page edge), the apps after it slide right, and
+  its name appears centred underneath. With more apps the row scrolls
+  sideways; when focus leaves the row it settles back. OK opens an app. HOME always lands on the first app.
 - **Rearrange on the TV**: long-press OK on an app (the ring turns amber),
   move it with LEFT/RIGHT (it swaps places), OK to place. The order is kept across restarts and
   reboots. ☰ → *Reset app order* goes back to the `home.conf` order.
