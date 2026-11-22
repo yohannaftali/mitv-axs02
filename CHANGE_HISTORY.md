@@ -3,6 +3,14 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — feat(launcher): console-style enlarged focus in the apps row (#44)
+- Issue #44 (owner's request)
+- Files: apps/home/src/.../HomeActivity.java (focusRow: 1.3x from the left edge, 10 dp nudge, following tiles slide, shared name label centred under the tile, settle and scroll back; row packed from the left), changes/1-fast-home/README.md, docs/screenshots/home-*.webp
+- Iterations with the owner on the TV: name beside the tile, then under it left-aligned, then centred (final)
+- Verified on TV: first, middle and last tile (all on screen with five apps), name placement, settle when moving to the inputs, move mode (amber, enlarged), cold start 609–630 ms, no crash
+- Not verified: reboot
+- TV state left: applied
+
 ## [2026-11-22] — feat(launcher): Aerial TV card and tighter home layout (#42)
 - Issue #42
 - Files: apps/home/src/.../HomeActivity.java (tuner card opens TvContract.buildChannelsUriForInput, no dot for tuners; two-line auto-sized card names; equal 24 dp page margins; clock 60 sp / date 22 sp without font padding; ☰ and network icon in the top-right corner; apps row vertically centred; tiles and input cards aligned to the page margin; "Inputs" label removed; 12 dp card gaps), IconView.java (antenna icon), apps/home/config/home.conf (Aerial TV line, documented), README.md, changes/1-fast-home/README.md, docs/screenshots/home-{waves,orbit,pop,bloom}.webp
