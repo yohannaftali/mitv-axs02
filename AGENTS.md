@@ -117,3 +117,4 @@ Rules:
 | #12 | fix(apps,display): #2 and #3 revert.sh verify every baseline value | closed | 2026-11-22 |
 | #14 | feat(launcher): AXS Home redesign with clock, inputs sidebar, menu, rearrangeable apps and animated background | closed | 2026-11-22 |
 | #15 | feat(apps): install TV Bro browser from its verified GitHub release | closed | 2026-11-22 |
+| #18 | feat(launcher): inputs bar at the bottom of AXS Home with connection dots | closed | 2026-11-22 |

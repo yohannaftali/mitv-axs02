@@ -2,30 +2,35 @@
 
 Replaces the Google TV home screen with **AXS Home** (`apps/home/`): a 29 KB
 app with no permissions (not even internet), no ads and no recommendations.
-Layout since #14:
+Layout since #18:
 
 ```
- 3:06                                                         ☰
+ 3:23                                                              ☰
  Sunday, 22 November
- [YouTube] [Netflix] [Prime Video]        │ 🎮 PS5     HDMI 1
- [YouTube Music] [Browser]                │ 🎮 Xbox    HDMI 2
-                                          │ 🎮 Switch  HDMI 3
-        ~ animated waves ~                │ ○○○ AV
+ [YouTube] [Netflix] [Prime Video] [YouTube Music] [Browser]
+
+                     ~ animated waves ~
+ Inputs
+ | 🎮 PS5 ● HDMI 1 | 🎮 Xbox ● HDMI 2 | 🎮 Switch ● HDMI 3 | ○○○ RCA ● |
 ```
 
 - **Apps grid**: OK opens an app. HOME always lands on the first app.
 - **Rearrange on the TV**: long-press OK on an app, move it with the arrows
   (it swaps places), OK to place. The order is kept across restarts and
   reboots. ☰ → *Reset app order* goes back to the `home.conf` order.
-- **Inputs sidebar**: OK switches to that input. A labelled input shows the
-  label and its port; an unlabelled one only the port. Icons are original
-  drawings (gamepad, HDMI plug, AV jacks), not console logos.
+- **Inputs bar** (bottom): OK switches to that input; DOWN from the apps
+  reaches it. A labelled input shows the label and its port; an unlabelled one
+  only the port. Icons are original drawings (gamepad, HDMI plug, RCA jacks),
+  not console logos.
+- **Connection dot**: green while the input is sending a picture
+  (`INPUT_STATE_CONNECTED`), grey otherwise; it updates live. This TV reports
+  "standby" for every input, even an empty RCA port, so standby counts as grey.
 - **☰ menu** (also the remote's MENU key): Settings, Google Play Store, All
   apps, Reset app order. The remote's ALL_APPS key opens All apps directly.
 - **Waves**: each layer is drawn once in the background at half resolution and
   then only slid sideways (20 fps), starting about 350 ms after the home screen
   appears. They stop whenever another app is on screen.
-- Measured on the TV (#14): 552–560 ms after a full restart (before #14:
+- Measured on the TV (#18): 502–531 ms after a full restart (before #14:
   ~681 ms), 26 MB of memory, about 13% of one CPU core while home is on screen
   and 0 while another app is open.
 

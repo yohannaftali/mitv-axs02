@@ -53,9 +53,11 @@ import java.util.Set;
 public final class HomeActivity extends Activity {
     private static final String CONF = "home.conf";
     private static final String PREF_ORDER = "order";
-    private static final int COLS = 3;
-    private static final int TILE_W = 164;
-    private static final int TILE_H = 92;
+    private static final int COLS = 5;
+    private static final int TILE_W = 152;
+    private static final int TILE_H = 86;
+    private static final int DOT_ON = 0xFF3DDC84;
+    private static final int DOT_OFF = 0xFF5F6673;
     private static final int BG = 0xFF05070D;
     private static final int MOVE_COLOR = 0xFFFFC233;
 
@@ -65,7 +67,16 @@ public final class HomeActivity extends Activity {
     private FrameLayout root;
     private WaveView waves;
     private LinearLayout grid;
-    private LinearLayout sidebar;
+    private LinearLayout inputBar;
+    private final Map<String, View> dots = new LinkedHashMap<>();
+    private TvInputManager tvInputs;
+    private final TvInputManager.TvInputCallback inputCallback = new TvInputManager.TvInputCallback() {
+        @Override
+        public void onInputStateChanged(String inputId, int state) {
+            View dot = dots.get(inputId);
+            if (dot != null) paintDot(dot, state);
+        }
+    };
     private TextView menuButton;
     private PopupWindow menu;
     private Dialog allApps;
@@ -105,28 +116,22 @@ public final class HomeActivity extends Activity {
 
         content.addView(topBar());
 
-        LinearLayout body = new LinearLayout(this);
-        body.setOrientation(LinearLayout.HORIZONTAL);
-        LinearLayout.LayoutParams bodyLp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f);
-        bodyLp.topMargin = dp(28);
-        content.addView(body, bodyLp);
-
         grid = new LinearLayout(this);
         grid.setOrientation(LinearLayout.VERTICAL);
         grid.setClipChildren(false);
         grid.setClipToPadding(false);
-        body.addView(grid, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f));
+        LinearLayout.LayoutParams gridLp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f);
+        gridLp.topMargin = dp(28);
+        content.addView(grid, gridLp);
 
-        sidebar = new LinearLayout(this);
-        sidebar.setOrientation(LinearLayout.VERTICAL);
-        sidebar.setPadding(dp(12), dp(12), dp(12), dp(12));
-        sidebar.setBackground(rounded(0x73000000, 0, 12));
-        LinearLayout.LayoutParams sideLp = new LinearLayout.LayoutParams(dp(270), ViewGroup.LayoutParams.WRAP_CONTENT);
-        sideLp.leftMargin = dp(24);
-        body.addView(sidebar, sideLp);
+        inputBar = new LinearLayout(this);
+        inputBar.setOrientation(LinearLayout.VERTICAL);
+        content.addView(inputBar, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         setContentView(root);
+        tvInputs = (TvInputManager) getSystemService(Context.TV_INPUT_SERVICE);
 
         IntentFilter f = new IntentFilter();
         f.addAction(Intent.ACTION_PACKAGE_ADDED);
@@ -183,6 +188,10 @@ public final class HomeActivity extends Activity {
         super.onResume();
         resumed = true;
         refresh();
+        if (tvInputs != null) {
+            tvInputs.registerCallback(inputCallback, ui);
+            for (Map.Entry<String, View> d : dots.entrySet()) paintDot(d.getValue(), inputState(d.getKey()));
+        }
         // The waves start only after the first frame, so they never delay the home screen.
         root.post(() -> ui.postDelayed(startWaves, 350));
     }
@@ -190,6 +199,7 @@ public final class HomeActivity extends Activity {
     @Override
     protected void onPause() {
         resumed = false;
+        if (tvInputs != null) tvInputs.unregisterCallback(inputCallback);
         ui.removeCallbacks(startWaves);
         if (waves != null) waves.stop();
         super.onPause();
@@ -251,7 +261,7 @@ public final class HomeActivity extends Activity {
         }
         loadOrder();
         buildGrid();
-        buildSidebar();
+        buildInputs();
         focusFirst();
     }
 
@@ -417,61 +427,95 @@ public final class HomeActivity extends Activity {
 
     private void focusFirst() {
         if (!order.isEmpty()) focusTile(order.get(0));
-        else if (sidebar.getChildCount() > 1) sidebar.getChildAt(1).requestFocus();
+        else if (!dots.isEmpty()) ((View) dots.values().iterator().next().getParent()).requestFocus();
         else menuButton.requestFocus();
     }
 
-    // ---- inputs sidebar ----
+    // ---- inputs bar (bottom) ----
 
-    private void buildSidebar() {
-        sidebar.removeAllViews();
+    private void buildInputs() {
+        inputBar.removeAllViews();
+        dots.clear();
         TextView title = new TextView(this);
         title.setText("Inputs");
         title.setTextColor(0x99FFFFFF);
         title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         title.setTypeface(Typeface.DEFAULT_BOLD);
-        title.setPadding(dp(8), 0, 0, dp(6));
-        sidebar.addView(title);
+        title.setPadding(dp(8), 0, 0, dp(8));
+        inputBar.addView(title);
 
-        TvInputManager tim = (TvInputManager) getSystemService(Context.TV_INPUT_SERVICE);
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setClipChildren(false);
+        inputBar.addView(row, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         for (String[] e : inputs) {
             String label = field(e, 1);
             String port = field(e, 2);
             String id = field(e, 3);
-            if (tim != null && tim.getTvInputInfo(id) == null) continue;
+            if (tvInputs != null && tvInputs.getTvInputInfo(id) == null) continue;
             int color = parseColor(field(e, 5), 0xFF5A6478);
-            sidebar.addView(inputEntry(label, port, id, IconView.parse(field(e, 4), port), color));
+            row.addView(inputCard(label, port, id, IconView.parse(field(e, 4), port), color));
         }
-        if (sidebar.getChildCount() == 1) sidebar.setVisibility(View.GONE);
-        else sidebar.setVisibility(View.VISIBLE);
+        inputBar.setVisibility(row.getChildCount() == 0 ? View.GONE : View.VISIBLE);
     }
 
-    private View inputEntry(String label, String port, String id, int icon, int color) {
-        LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setPadding(dp(8), dp(8), dp(8), dp(8));
-        row.setFocusable(true);
-        row.setClickable(true);
-        row.setBackground(focusBg(0x00000000, 10));
-        row.setContentDescription(label.isEmpty() ? port : label);
-        LinearLayout.LayoutParams rowLp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        rowLp.bottomMargin = dp(4);
-        row.setLayoutParams(rowLp);
+    private View inputCard(String label, String port, String id, int icon, int color) {
+        FrameLayout card = new FrameLayout(this);
+        card.setFocusable(true);
+        card.setClickable(true);
+        card.setPadding(dp(12), dp(10), dp(12), dp(10));
+        card.setBackground(focusBg(0x8C10141C, 12));
+        card.setContentDescription(label.isEmpty() ? port : label);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, dp(72), 1f);
+        lp.setMargins(dp(8), 0, dp(8), 0);
+        card.setLayoutParams(lp);
 
-        row.addView(new IconView(this, icon, color), new LinearLayout.LayoutParams(dp(44), dp(44)));
-
+        LinearLayout content = new LinearLayout(this);
+        content.setOrientation(LinearLayout.HORIZONTAL);
+        content.setGravity(Gravity.CENTER_VERTICAL);
+        content.addView(new IconView(this, icon, color), new LinearLayout.LayoutParams(dp(44), dp(44)));
         LinearLayout text = new LinearLayout(this);
         text.setOrientation(LinearLayout.VERTICAL);
-        text.setPadding(dp(12), 0, 0, 0);
-        text.addView(label(label.isEmpty() ? port : label, 18, Color.WHITE, true));
+        text.setPadding(dp(12), 0, dp(14), 0);
+        TextView name = label(label.isEmpty() ? port : label, 17, Color.WHITE, true);
+        name.setMaxLines(1);
+        name.setAutoSizeTextTypeUniformWithConfiguration(11, 17, 1, TypedValue.COMPLEX_UNIT_SP);
+        text.addView(name, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(24)));
         if (!label.isEmpty() && !port.isEmpty()) text.addView(label(port, 13, 0xAAFFFFFF, false));
-        row.addView(text);
+        content.addView(text, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        card.addView(content, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
+        View dot = new View(this);
+        paintDot(dot, inputState(id));
+        card.addView(dot, new FrameLayout.LayoutParams(dp(10), dp(10), Gravity.TOP | Gravity.END));
+        dots.put(id, dot);
+
+        card.setOnFocusChangeListener((v, has) -> {
+            float s = has ? 1.05f : 1f;
+            v.animate().scaleX(s).scaleY(s).setDuration(90).start();
+        });
         Intent view = new Intent(Intent.ACTION_VIEW, TvContract.buildChannelUriForPassthroughInput(id));
-        row.setOnClickListener(v -> launch(view));
-        return row;
+        card.setOnClickListener(v -> launch(view));
+        return card;
+    }
+
+    private int inputState(String id) {
+        try {
+            return tvInputs == null ? TvInputManager.INPUT_STATE_DISCONNECTED : tvInputs.getInputState(id);
+        } catch (IllegalArgumentException e) {
+            return TvInputManager.INPUT_STATE_DISCONNECTED;
+        }
+    }
+
+    /** Green only while the input sends a picture; this TV reports standby even for an empty AV port. */
+    private void paintDot(View dot, int state) {
+        GradientDrawable d = new GradientDrawable();
+        d.setShape(GradientDrawable.OVAL);
+        d.setColor(state == TvInputManager.INPUT_STATE_CONNECTED ? DOT_ON : DOT_OFF);
+        dot.setBackground(d);
+        dot.setContentDescription(state == TvInputManager.INPUT_STATE_CONNECTED ? "connected" : "no signal");
     }
 
     // ---- menu and all apps ----
