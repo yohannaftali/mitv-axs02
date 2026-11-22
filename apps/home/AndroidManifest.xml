@@ -11,6 +11,11 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- Own wallpaper files from USB drives and Download/Pictures/Movies (asked once). -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!-- System monitor's "apps used today" list. apply.sh allows it with appops;
+         without it the page shows the system-wide figures only. -->
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
+    <!-- Names and icons in that list also for apps without a launcher entry (e.g. screensavers). -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
     <!-- targetSdk 30 package visibility: needed to read other apps' banners and launch intents. -->
     <queries>

@@ -22,7 +22,7 @@ access, and it opens in about half a second.
 - **Inputs**: PS5 / HDMI 1, Xbox / HDMI 2, Nintendo Switch / HDMI 3, AV. OK
   switches input; the dot turns green while the input is sending a picture.
 - **Top right**: network status (Ethernet or Wi-Fi) and the ☰ menu (Settings,
-  Play Store, Home settings, All apps, Reset app order).
+  Play Store, Home settings, System monitor, All apps, Reset app order).
 - **Screensaver**: AXS Clock, a large clock and date over dimmed animated
   waves, with the weather for your city and USD/IDR, EUR/USD, GBP/USD,
   USD/JPY, gold, BTC, ETH and SOL (free sources, credited on screen).
@@ -40,6 +40,13 @@ translucent panel; Clock, Wallpaper (with live previews and your own file)
 and Sound, in the same focus style as the app tiles:
 
 ![Home settings page: categories on the left, wallpaper preview cards on a translucent panel](docs/screenshots/home-settings.webp)
+
+System monitor (☰ → System monitor): CPU clock, memory, storage and uptime,
+live, plus the apps used today. Android 11 does not let apps read other
+apps' CPU or memory, so for an htop-like list run `sh scripts/tv.sh top` on
+the PC:
+
+![System monitor: CPU clock, memory, storage, uptime and apps used today](docs/screenshots/system-monitor.webp)
 
 ## Target device
 
@@ -154,6 +161,7 @@ sh scripts/tv.sh connect                 # adb connect using .env
 sh scripts/tv.sh info                    # model, Android, patch, kernel, launcher
 sh scripts/tv.sh shell 'pm list packages -s'
 sh scripts/tv.sh screenshot              # saved to captures/ (git-ignored)
+sh scripts/tv.sh top                     # htop-like: every process by CPU, refreshed (mem | once)
 ```
 
 `scripts/tv.sh` never prints the TV's IP and passes all output through

@@ -5,6 +5,7 @@
 #   scripts/tv.sh connect            # adb connect (port 5555 or TV_ADB_PORT)
 #   scripts/tv.sh info               # non-sensitive build facts
 #   scripts/tv.sh shell '<cmd>'      # run a shell command on the TV
+#   scripts/tv.sh top [cpu|mem] [once]  # htop-like process list, refreshed (Ctrl-C)
 #   scripts/tv.sh screenshot <file>  # PNG into captures/ (git-ignored)
 #   scripts/tv.sh install <apk>      # adb install -r
 #   scripts/tv.sh push <local> <tv>  # adb push
@@ -83,6 +84,29 @@ case "$cmd" in
       echo "shell_user=$(id -un)"' ;;
   shell)
     run -s "$SERIAL" shell "$@" ;;
+  top)
+    # htop-like view from the PC: Android 11 lets only adb/shell see every
+    # process. Two samples 2 s apart give current %CPU; rows are sorted here
+    # because toybox top's batch sort is unreliable. Ctrl-C to stop.
+    sort_col=3; once=0
+    for a in "$@"; do
+      case $a in cpu) sort_col=3 ;; mem) sort_col=4 ;; once) once=1 ;;
+        *) echo "usage: tv.sh top [cpu|mem] [once]" >&2; exit 2 ;; esac
+    done
+    while :; do
+      rc=0
+      "$ADB" -s "$SERIAL" shell 'top -b -d 2 -n 2 -o PID,USER,%CPU,%MEM,RES,NAME' </dev/null >"$OUT" 2>&1 || rc=$?
+      [ "$rc" -eq 0 ] || { redact <"$OUT" >&2; exit "$rc"; }
+      [ "$once" = 1 ] || printf '\033[H\033[2J'
+      tr -d '\r' <"$OUT" | awk -v col="$sort_col" '
+        /^Tasks:/ { n = 0; head = ""; rows = "" }
+        { n++ }
+        n <= 5 { head = head $0 "\n"; next }
+        { rows = rows $0 "\n" }
+        END { printf "%s", head; printf "%s", rows | "sort -k" col "," col " -n -r | head -n 20" }' | redact
+      [ "$once" = 1 ] && exit 0
+      echo "(sorted by $([ "$sort_col" = 3 ] && echo CPU || echo memory); Ctrl-C to stop)"
+    done ;;
   screenshot)
     out=${1:-"$ROOT/captures/screen-$(date +%Y%m%d-%H%M%S).png"}
     mkdir -p "$(dirname -- "$out")"
