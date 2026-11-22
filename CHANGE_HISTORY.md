@@ -3,6 +3,12 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — main deployed to the TV (50290f4)
+- Built AXS Home and AXS Clock 1.1 from main and applied #1 and #33; check.sh 0 for #1, #2, #3, #15, #32, #33
+- Home screen and screensaver checked on screen; no crashes for either app; secret scan of #32..#33 clean
+- Test notes posted on #32 and #33
+- TV state left: all changes applied
+
 ## [2026-11-22] — feat(systemui): market and weather panel on the AXS Clock screensaver (#33)
 - Issue #33
 - Files: apps/clock/ (AndroidManifest.xml 1.1 with INTERNET, ACCESS_NETWORK_STATE, ACCESS_COARSE_LOCATION; config/clock.conf; src/.../ClockDream.java, Conf.java, Feed.java, StyleView.java and Backdrop.java copied from AXS Home), changes/33-market-panel/ (apply, revert, check, baseline, README), README.md, .env.example
