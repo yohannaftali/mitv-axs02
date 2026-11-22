@@ -1,0 +1,103 @@
+# AGENTS.md — MiTV-AXS02 UI customisation
+
+Single source of truth for the `planner`, `coder`, `tester` and `reviewer`
+skills in `.claude/skills/`. Read it in full before working on an issue.
+
+## Repository
+- remote: https://github.com/yohannaftali/mitv-axs02
+- platform: GitHub, **public**. Every commit, issue, comment and PR is
+  world-readable. Use the logged-in `gh` CLI; there is no token in `.env`.
+- default branch: `main`; one branch per issue, `<id>-<short-slug>`.
+
+## Goal
+Change the user interface of one Xiaomi TV, model **MiTV-AXS02**: launcher /
+home screen, system UI settings, animations, display and density, the apps
+that are shown, preinstalled apps that are hidden or disabled, and companion
+apps installed on the TV. Every change is made over ADB and can be reverted.
+
+## Target device (non-sensitive, may be published)
+| Fact | Value |
+|---|---|
+| Model | `MiTV-AXSO2` as reported by `ro.product.model` (letter O; marketed as MiTV-AXS02) |
+| Manufacturer / device | Xiaomi / `dangalUHD` |
+| OS | Android 11 (API 30), Android TV |
+| Build | RTT0.211201.001.1150 release-keys |
+| Security patch | 2024-02-05 |
+| Kernel | 4.9.269 (on device; the project brief said 4.9.262) |
+| ABI | armeabi-v7a, armeabi (32-bit) |
+| UI resolution / density | 1920x1080, 320 dpi |
+| Default home | `com.google.android.tvlauncher/.MainActivity` (Google TV launcher) |
+| Access | ADB over the LAN (port 5555), `shell` user, **no root** |
+
+Verified on the device with `scripts/tv.sh info` on 2026-11-22. Re-run it after
+any firmware update and update this table from its output, never from memory.
+
+## Private data — never exposed
+These live only in `.env` (git-ignored) and on the TV:
+- `tv_private_ip_address` — the TV's LAN address
+- `netflix_esn` — the Netflix ESN of the TV
+- also: the device serial number, Android ID, MAC addresses, Wi-Fi SSID,
+  Google/Netflix/Xiaomi account names, profile names shown on screen.
+
+Rules:
+1. Never print, log, commit, or post any of them, including into issues, PRs,
+   comments, `CHANGE_HISTORY.md`, test fixtures or commit messages.
+2. Read `.env` only through `scripts/tv.sh` / `scripts/redact.sh`. Never
+   `cat .env`; refer to values as `$TV_IP` / `$NETFLIX_ESN`.
+3. Every piece of TV output (`getprop`, `dumpsys`, `logcat`, `settings list`,
+   `pm list`, `uiautomator dump`) goes through `scripts/redact.sh` before it is
+   shown, saved in the repo or posted. Raw captures stay in `captures/`
+   (git-ignored).
+4. Screenshots (`captures/*.png`) can show account and profile names. They are
+   never committed or uploaded. Describe them in text instead.
+5. Do not read, change, spoof or work around the Netflix ESN, DRM (Widevine)
+   or any app's licence checks.
+6. `.githooks/pre-commit` blocks commits that contain `.env` values, `.env`
+   itself, `captures/`, or ESN-shaped strings. Enable it once per clone:
+   `git config core.hooksPath .githooks`. Never bypass it (`--no-verify`).
+
+## Guardrails for changes on the TV
+- **Reversible only.** Every change ships as a script under `changes/` with
+  both `apply` and `revert`, and the baseline it replaces is captured first
+  (`changes/<id>-<slug>/baseline.txt`, redacted).
+- **Allowed without root:** `settings put` (system/secure/global),
+  `pm disable-user --user 0` / `pm enable`, `pm uninstall -k --user 0`
+  (restored with `cmd package install-existing`), `cmd overlay enable/disable`
+  for overlays that already exist on the device, `wm size/density` (with
+  `reset`), `cmd package set-home-activity`, installing / uninstalling
+  user APKs, `am`/`input` to drive the UI.
+- **Forbidden:** factory reset, `fastboot`/flashing, bootloader unlock,
+  root exploits, writing to `/system` or `/vendor`, disabling
+  `com.android.systemui`, the package installer, the settings app, the only
+  launcher, the Wi-Fi/network stack, or `adbd` (each of these can lock us out
+  of the TV), and changing anything about Netflix/DRM.
+- **Ask before** every apply/revert/reboot on the TV during development and
+  testing. Never two risky changes in a row without checking the TV still
+  shows a working home screen and ADB still answers.
+
+## Layout
+| Path | Purpose |
+|---|---|
+| `scripts/tv.sh` | adb wrapper: `connect`, `info`, `shell`, `screenshot`, `adb` |
+| `scripts/redact.sh` | scrubs private values from any output (stdin → stdout) |
+| `changes/<id>-<slug>/` | `apply.sh`, `revert.sh`, `check.sh`, `baseline.txt`, `README.md` |
+| `apps/` | source of companion APKs, if an issue needs one (stack decided in that issue) |
+| `captures/` | raw screenshots/dumps, git-ignored |
+| `.githooks/pre-commit` | secret guard |
+
+## Conventions
+- Scripts are POSIX `sh`, run from Git Bash on Windows (the dev machine);
+  the TV-side commands they send must also be valid in the TV's `toybox`
+  `sh`. Every TV call goes through `scripts/tv.sh`, never a hard-coded IP.
+- `check.sh` exits 0 when the change is in place and non-zero otherwise, so
+  `tester` can verify apply and revert mechanically.
+- Changes are idempotent: running `apply.sh` twice is safe; `revert.sh` on
+  an unchanged TV is safe.
+- Use Android 11 (API 30) commands and APIs only; check that a command exists
+  on this TV (`cmd <svc> help`) before relying on it.
+- Conventional commits referencing the issue: `feat(launcher): hide ad row (#3)`.
+- No comments unless they explain a non-obvious why; no unrelated refactors.
+
+## Tracked Issues
+| ID | Title | Status | Last Checked |
+|----|-------|--------|--------------|
