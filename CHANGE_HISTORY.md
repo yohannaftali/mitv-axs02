@@ -3,6 +3,15 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — feat(launcher): AXS Home redesign (#14)
+- Issue #14
+- Files: apps/home/src/…/HomeActivity.java (rewritten), WaveView.java and IconView.java (new), apps/home/config/home.conf (new format), changes/1-fast-home/README.md, README.md
+- Clock + date top left, ☰ menu top right (also MENU key; ALL_APPS key opens All apps), 3-column apps grid rearrangeable with long-press OK (order in SharedPreferences, Reset app order in the menu), inputs sidebar with label + port and original gamepad/HDMI/AV icons (HDMI 1–3 and AV), animated waves
+- Waves: first version drew 4 anti-aliased paths per frame and cost about 1.3 CPU cores; replaced by layers pre-rendered once off the UI thread at half resolution and slid at 20 fps: about 13% of one core with home on screen, 0 with another app open
+- Verified on the TV: layout screenshots; HDMI 1/2/3 and AV switch from the sidebar (doTune HW5/HW6/HW7/HW1); menu items and BACK; All apps; move with long-press, arrows and OK; order kept after app restart and reboot; reset order; cold start 552–560 ms (before ~681 ms); 26 MB PSS; YouTube opens from home with waves running; boot lands on AXS Home; checks of #1, #2, #3, #15 pass; no crashes; APK 29 KB, no permissions
+- Not re-run: changes/1-fast-home/revert.sh (unchanged since #10, where it was tested)
+- TV state left: new AXS Home applied, default app order
+
 ## [2026-11-22] — feat(apps): install TV Bro browser from its verified GitHub release (#15)
 - Issue #15
 - Files: changes/15-tv-bro/ (apply, check, revert, baseline, pinned.txt, README), apps/home/config/home.conf (Browser tile), README.md, .gitignore (.cache/)

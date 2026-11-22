@@ -137,7 +137,7 @@ recover if something goes wrong.
 
 | Change | What it does |
 |---|---|
-| [`changes/1-fast-home`](changes/1-fast-home/README.md) | **AXS Home**: 21 KB home screen with one-press HDMI tiles (PS5, Xbox, Switch) and your apps; layout in [`apps/home/config/home.conf`](apps/home/config/home.conf) |
+| [`changes/1-fast-home`](changes/1-fast-home/README.md) | **AXS Home**: 29 KB home screen with clock, rearrangeable apps grid, inputs sidebar (PS5, Xbox, Switch, AV), ☰ menu and animated waves; layout in [`apps/home/config/home.conf`](apps/home/config/home.conf) |
 | [`changes/2-debloat`](changes/2-debloat/README.md) | Disables 14 ad, tracking and unused preinstalled apps (needs #1); screensaver to built-in Colors |
 | [`changes/3-animations`](changes/3-animations/README.md) | System animations at 0.5x |
 | [`changes/15-tv-bro`](changes/15-tv-bro/README.md) | TV Bro browser, installed from its verified GitHub release |
