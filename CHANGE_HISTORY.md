@@ -3,6 +3,14 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — feat(launcher): network status icon next to the menu (#22)
+- Issue #22
+- Files: apps/home/src/…/NetIcon.java (new), HomeActivity.java, apps/home/AndroidManifest.xml (ACCESS_NETWORK_STATE), changes/1-fast-home/README.md, README.md
+- Default-network callback while home is on screen; Ethernet / Wi-Fi (0–4 bars) icon; white validated, amber not validated, grey slashed offline; no SSID used
+- Verified on the TV: icon reports "Ethernet, online"; only permission ACCESS_NETWORK_STATE (granted), no INTERNET; cold start 513–521 ms; no crashes
+- Not verified on the TV: amber and offline states (disconnecting the network would also cut ADB)
+- TV state left: applied
+
 ## [2026-11-22] — fix(launcher): AXS Home clock in 24-hour format (#20)
 - Issue #20
 - Files: apps/home/src/…/HomeActivity.java, apps/home/config/home.conf (clock line; AV label restored, owner preference), changes/1-fast-home/README.md, README.md

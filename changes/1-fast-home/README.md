@@ -1,11 +1,12 @@
 # #1 — AXS Home: fast minimal home screen with HDMI shortcuts
 
-Replaces the Google TV home screen with **AXS Home** (`apps/home/`): a 29 KB
-app with no permissions (not even internet), no ads and no recommendations.
+Replaces the Google TV home screen with **AXS Home** (`apps/home/`): a 33 KB
+app with one permission (read-only network status; no internet access), no ads
+and no recommendations.
 Layout since #18:
 
 ```
-15:23                                                              ☰
+15:23                                                          🖧  ☰
  Sunday, 22 November
  [YouTube] [Netflix] [Prime Video] [YouTube Music] [Browser]
 
@@ -27,6 +28,9 @@ Layout since #18:
   "standby" for every input, even an empty AV port, so standby counts as grey.
 - **Clock**: 24-hour (`HH:mm`) whatever the TV's setting; change it with the
   `clock|<time format>|<date format>` line in `home.conf`.
+- **Network status** (left of ☰): Ethernet or Wi-Fi icon (Wi-Fi with signal
+  bars); white = online, amber = connected without internet, grey with a slash
+  = offline. Updates live. The Wi-Fi network name is never shown.
 - **☰ menu** (also the remote's MENU key): Settings, Google Play Store, All
   apps, Reset app order. The remote's ALL_APPS key opens All apps directly.
 - **Waves**: each layer is drawn once in the background at half resolution and
