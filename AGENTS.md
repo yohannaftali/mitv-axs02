@@ -133,3 +133,4 @@ Rules:
 | #33 | feat(systemui): market and weather panel on the AXS Clock screensaver | closed | 2026-11-22 |
 | #36 | feat(launcher): console-style Home settings page with frosted panel, categories and wallpaper previews | closed | 2026-11-22 |
 | #38 | feat(launcher): System monitor page with live CPU, RAM, storage and a top-style app list | closed | 2026-11-22 |
+| #40 | feat(apps): Phone remote — QR code opens a browser remote and keyboard served by the TV | open | 2026-11-22 |

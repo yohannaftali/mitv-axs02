@@ -3,6 +3,12 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-22] — feat(apps): Phone remote — QR code opens a browser remote and keyboard served by the TV
+- Issue #40 created on GitHub
+- Scope: apps (new AXS Remote APK, IME) and launcher (menu item)
+- Labels: enhancement, apps
+- Owner's choices: control through an AXS input method (no power button), HTTPS with a self-signed certificate on port 8077
+
 ## [2026-11-22] — feat(launcher): System monitor page and `tv.sh top` (#38)
 - Issue #38
 - Files: apps/home/src/.../MonitorPanel.java (new), HomeActivity.java (menu type `monitor`, closes on HOME), AndroidManifest.xml (PACKAGE_USAGE_STATS, QUERY_ALL_PACKAGES), apps/home/config/home.conf (menu line), changes/1-fast-home/apply.sh (`appops set … GET_USAGE_STATS allow`) and README.md, scripts/tv.sh (`top [cpu|mem] [once]`), README.md, AGENTS.md, docs/screenshots/system-monitor.webp
