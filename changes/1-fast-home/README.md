@@ -24,8 +24,17 @@ Layout since #18:
   reboots. ☰ → *Reset app order* goes back to the `home.conf` order.
 - **Inputs bar** (bottom): OK switches to that input; DOWN from the apps
   reaches it. A labelled input shows the label and its port; an unlabelled one
-  only the port. Icons are original drawings (gamepad, HDMI plug, AV jacks),
-  not console logos.
+  only the port. Icons are original drawings (gamepad, HDMI plug, AV jacks,
+  antenna), not console logos. Long names shrink onto two lines.
+- **Aerial TV** (first card): the TV's tuner input
+  (`com.droidlogic.tvinput/.services.ADTVInputService/HW16`, analog + digital).
+  OK opens Live TV on that input's channels, so it plays the last channel; with
+  no channels scanned yet Live TV starts its channel scan (stop it with BACK →
+  Stop). It has no dot: an antenna signal cannot be read like HDMI's. No
+  antenna? Delete its `input|Aerial TV|…` line in `home.conf` and re-run
+  `apply.sh`.
+- **Layout**: the same 24 dp margin on every edge; clock and date top left,
+  network and ☰ top right, the apps row centred between them and the inputs.
 - **Connection dot**: green while the input is sending a picture
   (`INPUT_STATE_CONNECTED`), grey otherwise; it updates live. This TV reports
   "standby" for every input, even an empty AV port, so standby counts as grey.

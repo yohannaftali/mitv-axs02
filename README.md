@@ -19,8 +19,10 @@ access, and it opens in about half a second.
   spread evenly in one row that scrolls sideways when you add more. The
   selected app zooms in with a ring around it, console-style. Long-press OK
   to rearrange them on the TV.
-- **Inputs**: PS5 / HDMI 1, Xbox / HDMI 2, Nintendo Switch / HDMI 3, AV. OK
-  switches input; the dot turns green while the input is sending a picture.
+- **Inputs**: Aerial TV (antenna, opens Live TV), PS5 / HDMI 1, Xbox / HDMI 2,
+  Nintendo Switch / HDMI 3, AV. OK switches input; the dot turns green while an
+  HDMI/AV input is sending a picture. Names, icons and colours are one line
+  each in `home.conf`.
 - **Top right**: network status (Ethernet or Wi-Fi) and the ☰ menu (Settings,
   Play Store, Home settings, System monitor, Phone remote, All apps, Reset
   app order).
@@ -190,7 +192,7 @@ recover if something goes wrong.
 
 | Change | What it does |
 |---|---|
-| [`changes/1-fast-home`](changes/1-fast-home/README.md) | **AXS Home**: 46 KB home screen with clock (12/24-hour), network status, wallpapers (4 built-in or your own image/GIF/video), rearrangeable apps row, inputs bar at the bottom with connection dots (PS5, Xbox, Switch, AV), ☰ menu and animated waves; layout in [`apps/home/config/home.conf`](apps/home/config/home.conf) |
+| [`changes/1-fast-home`](changes/1-fast-home/README.md) | **AXS Home**: 46 KB home screen with clock (12/24-hour), network status, wallpapers (4 built-in or your own image/GIF/video), rearrangeable apps row, inputs bar at the bottom with connection dots (Aerial TV, PS5, Xbox, Switch, AV), ☰ menu and animated waves; layout in [`apps/home/config/home.conf`](apps/home/config/home.conf) |
 | [`changes/2-debloat`](changes/2-debloat/README.md) | Disables 14 ad, tracking and unused preinstalled apps (needs #1); screensaver to built-in Colors |
 | [`changes/3-animations`](changes/3-animations/README.md) | System animations at 0.5x |
 | [`changes/15-tv-bro`](changes/15-tv-bro/README.md) | TV Bro browser, installed from its verified GitHub release |
