@@ -27,8 +27,11 @@ access, and it opens in about half a second.
   Play Store, Home settings, System monitor, Phone remote, All apps, Reset
   app order).
 - **Screensaver**: AXS Clock, a large clock and date over dimmed animated
-  waves, with the weather for your city and USD/IDR, EUR/USD, GBP/USD,
-  USD/JPY, gold, BTC, ETH and SOL (free sources, credited on screen).
+  waves, with the weather for your city and up to eight market tiles
+  (USD/IDR, EUR/USD, gold, BTC… by default, free sources credited on
+  screen). ☰ → Home settings → Screensaver picks the tickers and where each
+  comes from: opt-in Yahoo Finance adds live FX, IHSG, S&P 500, Dow, NASDAQ
+  and oil; Twelve Data and Finnhub work with your own free key.
 - Ads, tracking and unused Xiaomi/Google apps are disabled, and system
   animations run twice as fast.
 
@@ -39,10 +42,13 @@ Built-in wallpapers (original designs) — or use your own image, GIF or video:
 | ![Orbit wallpaper](docs/screenshots/home-orbit.webp) | ![Pop wallpaper](docs/screenshots/home-pop.webp) | ![Bloom wallpaper](docs/screenshots/home-bloom.webp) |
 
 Home settings (☰ → Home settings): the wallpaper keeps moving behind a
-translucent panel; Clock, Wallpaper (with live previews and your own file)
-and Sound, in the same focus style as the app tiles:
+translucent panel; Clock, Wallpaper (with live previews and your own file),
+Sound and Screensaver (tickers, data sources, refresh), in the same focus
+style as the app tiles:
 
 ![Home settings page: categories on the left, wallpaper preview cards on a translucent panel](docs/screenshots/home-settings.webp)
+
+![Home settings → Screensaver: tickers with their data source](docs/screenshots/screensaver-settings.webp)
 
 System monitor (☰ → System monitor): CPU clock, memory, storage and uptime,
 live, plus the apps used today. Android 11 does not let apps read other
@@ -205,7 +211,7 @@ recover if something goes wrong.
 | [`changes/3-animations`](changes/3-animations/README.md) | System animations at 0.5x |
 | [`changes/15-tv-bro`](changes/15-tv-bro/README.md) | TV Bro browser, installed from its verified GitHub release |
 | [`changes/32-clock-screensaver`](changes/32-clock-screensaver/README.md) | **AXS Clock** screensaver: large time and date on black, moves once a minute; 13 KB, no permissions |
-| [`changes/33-market-panel`](changes/33-market-panel/README.md) | AXS Clock 1.1: animated background, weather (auto location) and 8 market tiles from free, credited sources; fetches only while showing (needs #32) |
+| [`changes/33-market-panel`](changes/33-market-panel/README.md) | AXS Clock 1.2: animated background, weather (auto location) and up to 8 market tiles; tickers, sources (opt-in Yahoo Finance, your own Twelve Data / Finnhub key), refresh and background set in Home settings → Screensaver; fetches only while showing (needs #32) |
 | [`changes/40-phone-remote`](changes/40-phone-remote/README.md) | **AXS Remote**: phone remote and keyboard in the browser at `http://<TV IP>:8077` (QR code on the TV, no pairing); becomes the TV's keyboard |
 
 Building AXS Home needs the Android SDK (build-tools and a platform) and a JDK;

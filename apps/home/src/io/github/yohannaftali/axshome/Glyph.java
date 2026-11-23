@@ -16,6 +16,7 @@ final class Glyph extends View {
     static final int FILE = 4;
     static final int UP = 5;
     static final int CHECK = 6;
+    static final int MOON = 7;
 
     private final int kind;
     private final Paint line = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -113,6 +114,14 @@ final class Glyph extends View {
                 path.moveTo(x0 + s * 0.62f, y0 + s * 0.24f);
                 path.lineTo(x0 + s * 0.36f, y0 + s * 0.50f);
                 path.lineTo(x0 + s * 0.62f, y0 + s * 0.76f);
+                c.drawPath(path, line);
+                break;
+            case MOON:
+                // Crescent: the outer circle minus an offset one.
+                path.addCircle(x0 + s * 0.48f, y0 + s * 0.52f, s * 0.36f, Path.Direction.CW);
+                Path cut = new Path();
+                cut.addCircle(x0 + s * 0.66f, y0 + s * 0.38f, s * 0.30f, Path.Direction.CW);
+                path.op(cut, Path.Op.DIFFERENCE);
                 c.drawPath(path, line);
                 break;
             default: // CHECK on a filled disc
