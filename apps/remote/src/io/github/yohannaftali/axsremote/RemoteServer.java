@@ -1,6 +1,10 @@
 package io.github.yohannaftali.axsremote;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.LinkAddress;
+import android.net.LinkProperties;
+import android.net.Network;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Base64;
@@ -9,31 +13,28 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import javax.net.ssl.SSLServerSocket;
-import javax.net.ssl.SSLSocket;
-
 /**
- * HTTPS + WebSocket server for the phone remote, port 8077. Serves one page
- * and accepts a WebSocket only with the current pairing token (from the QR
- * code). Commands are a fixed set (keys, volume, text); there is no shell,
- * file or install access. Runs only on demand and stops after 10 minutes
- * without a command or a connected phone. Nothing is logged.
+ * HTTP + WebSocket server for the phone remote at http://<TV IP>:8077, running
+ * while AXS Remote is the TV's keyboard. No pairing (owner's choice): any
+ * device on the home network may connect. Plain HTTP because iOS Safari does
+ * not let a page's WebSocket use a self-signed certificate. A WebSocket from
+ * another site's page (Origin not this TV) is refused. Commands are a fixed
+ * set (keys, volume, text); there is no shell, file or install access.
+ * Nothing is logged.
  */
 final class RemoteServer {
     static final int PORT = 8077;
-    private static final long IDLE_MS = 10 * 60_000L;
     private static final String WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC11B05";
     private static RemoteServer instance;
 
@@ -46,11 +47,7 @@ final class RemoteServer {
     private final List<Peer> peers = new ArrayList<>();
     /** Network writes are not allowed on the main thread, where the keyboard's callbacks run. */
     private final java.util.concurrent.ExecutorService sender = java.util.concurrent.Executors.newSingleThreadExecutor();
-    private volatile String token = "";
-    private volatile long lastUse;
     private ServerSocket server;
-    private SelfSignedCert cert;
-    private InetAddress address;
     private Listener listener;
     private String lastEditor = "editor:0";
 
@@ -63,53 +60,51 @@ final class RemoteServer {
         return instance;
     }
 
-    /** Starts (or keeps) the server for this address and issues a new token; returns the URL for the QR code. */
-    synchronized String open(InetAddress ip, Listener l) throws Exception {
-        listener = l;
-        token = newToken();
-        lastUse = System.currentTimeMillis();
-        if (server != null && ip.equals(address)) {
-            dropPeers();
-            return url();
+    /** Starts the server if it is not running (bound to every interface, so an IP change needs no restart). */
+    synchronized void ensureRunning() {
+        if (server != null && !server.isClosed()) return;
+        try {
+            ServerSocket s = new ServerSocket();
+            s.setReuseAddress(true);
+            s.bind(new java.net.InetSocketAddress(PORT), 16);
+            server = s;
+            Thread t = new Thread(() -> acceptLoop(s), "remote-accept");
+            t.setDaemon(true);
+            t.start();
+        } catch (IOException e) {
+            server = null;
         }
-        close();
-        address = ip;
-        cert = SelfSignedCert.forAddress(app, ip);
-        SSLServerSocket s = (SSLServerSocket) cert.serverSocketFactory().createServerSocket();
-        s.setReuseAddress(true);
-        s.bind(new java.net.InetSocketAddress(PORT), 8);
-        server = s;
-        Thread t = new Thread(this::acceptLoop, "remote-accept");
-        t.setDaemon(true);
-        t.start();
-        ui.postDelayed(idleCheck, 60_000);
-        return url();
     }
 
     synchronized void setListener(Listener l) {
         listener = l;
-    }
-
-    String fingerprint() {
-        return cert == null ? "" : cert.shortFingerprint();
+        if (l != null) notifyPhones();
     }
 
     synchronized boolean running() {
-        return server != null;
+        return server != null && !server.isClosed();
     }
 
-    private String url() {
-        return "https://" + address.getHostAddress() + ":" + PORT + "/#" + token;
+    /** The address phones open, or null when the TV has no IPv4 network. Read at runtime, shown only on screen. */
+    String url() {
+        InetAddress ip = lanAddress(app);
+        return ip == null ? null : "http://" + ip.getHostAddress() + ":" + PORT + "/";
     }
 
-    private static String newToken() {
-        byte[] b = new byte[12];
-        new SecureRandom().nextBytes(b);
-        return Base64.encodeToString(b, Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
+    static InetAddress lanAddress(Context c) {
+        ConnectivityManager cm = (ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm == null) return null;
+        Network n = cm.getActiveNetwork();
+        LinkProperties lp = n == null ? null : cm.getLinkProperties(n);
+        if (lp == null) return null;
+        for (LinkAddress a : lp.getLinkAddresses()) {
+            InetAddress ip = a.getAddress();
+            if (ip instanceof Inet4Address && !ip.isLoopbackAddress()) return ip;
+        }
+        return null;
     }
 
     synchronized void close() {
-        ui.removeCallbacks(idleCheck);
         dropPeers();
         if (server != null) {
             try {
@@ -130,17 +125,6 @@ final class RemoteServer {
         for (Peer p : copy) p.close();
         notifyPhones();
     }
-
-    private final Runnable idleCheck = new Runnable() {
-        @Override
-        public void run() {
-            boolean idle;
-            synchronized (peers) {
-                idle = peers.isEmpty() && System.currentTimeMillis() - lastUse > IDLE_MS;
-            }
-            if (idle) close(); else ui.postDelayed(this, 60_000);
-        }
-    };
 
     /** Called by the keyboard when the focused field changes; the phone shows or hides its text bar. */
     void editorChanged(boolean editing, String hint, String text) {
@@ -176,9 +160,8 @@ final class RemoteServer {
 
     // ---- HTTP ----
 
-    private void acceptLoop() {
-        ServerSocket s = server;
-        while (s != null && !s.isClosed()) {
+    private void acceptLoop(ServerSocket s) {
+        while (!s.isClosed()) {
             try {
                 Socket c = s.accept();
                 Thread t = new Thread(() -> handle(c), "remote-conn");
@@ -193,7 +176,6 @@ final class RemoteServer {
     private void handle(Socket c) {
         try {
             c.setSoTimeout(15_000);
-            if (c instanceof SSLSocket) ((SSLSocket) c).startHandshake();
             InputStream in = c.getInputStream();
             OutputStream out = c.getOutputStream();
             String head = readHead(in);
@@ -210,6 +192,8 @@ final class RemoteServer {
             }
             String path = req[1];
             String key = null;
+            String origin = null;
+            String host = null;
             boolean upgrade = false;
             for (String l : lines) {
                 int i = l.indexOf(':');
@@ -218,11 +202,14 @@ final class RemoteServer {
                 String value = l.substring(i + 1).trim();
                 if (name.equals("sec-websocket-key")) key = value;
                 if (name.equals("upgrade") && value.equalsIgnoreCase("websocket")) upgrade = true;
+                if (name.equals("origin")) origin = value;
+                if (name.equals("host")) host = value;
             }
             if (path.startsWith("/ws")) {
-                String given = query(path, "t");
-                if (!upgrade || key == null || token.isEmpty() || !token.equals(given)) {
-                    respond(out, 403, "text/plain", "Scan the QR code on the TV again.".getBytes(StandardCharsets.UTF_8));
+                // No pairing, so stop other web pages the phone visits from driving the TV.
+                boolean sameSite = origin == null || (host != null && origin.equalsIgnoreCase("http://" + host));
+                if (!upgrade || key == null || !sameSite) {
+                    respond(out, 403, "text/plain", "Open the remote from the TV's address.".getBytes(StandardCharsets.UTF_8));
                     c.close();
                     return;
                 }
@@ -236,7 +223,6 @@ final class RemoteServer {
                 synchronized (peers) {
                     peers.add(p);
                 }
-                lastUse = System.currentTimeMillis();
                 notifyPhones();
                 p.send("hello:" + (RemoteIme.active() ? "1" : "0"));
                 p.send(lastEditor);
@@ -260,22 +246,6 @@ final class RemoteServer {
                 // Closing anyway.
             }
         }
-    }
-
-    private static String query(String path, String name) {
-        int q = path.indexOf('?');
-        if (q < 0) return "";
-        for (String kv : path.substring(q + 1).split("&")) {
-            int e = kv.indexOf('=');
-            if (e > 0 && kv.substring(0, e).equals(name)) {
-                try {
-                    return URLDecoder.decode(kv.substring(e + 1), "UTF-8");
-                } catch (IllegalArgumentException | java.io.UnsupportedEncodingException ex) {
-                    return "";
-                }
-            }
-        }
-        return "";
     }
 
     private static String readHead(InputStream in) throws IOException {
@@ -347,7 +317,6 @@ final class RemoteServer {
                         continue;
                     }
                     if (opcode == 0x1) {
-                        lastUse = System.currentTimeMillis();
                         String msg = new String(data, StandardCharsets.UTF_8);
                         if (msg.equals("ping")) send("pong");
                         else ui.post(() -> RemoteIme.command(app, msg));

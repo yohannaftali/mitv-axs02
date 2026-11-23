@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="io.github.yohannaftali.axsremote"
-    android:versionCode="1"
-    android:versionName="1.0">
+    android:versionCode="2"
+    android:versionName="1.1">
 
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
-    <!-- The phone remote page is served by the TV on the home network (HTTPS, port 8077). -->
+    <!-- The phone remote page is served by the TV on the home network (HTTP, port 8077). -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- The TV's own LAN address, shown in the QR code. -->
+    <!-- The TV's own LAN address, shown on screen and in the QR code. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- Lets HOME on the phone bring up the home screen while another app is in front
          (Android 11 blocks background activity starts otherwise); allowed by apply.sh with appops. -->

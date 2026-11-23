@@ -2,14 +2,9 @@ package io.github.yohannaftali.axsremote;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
-import android.net.ConnectivityManager;
-import android.net.LinkAddress;
-import android.net.LinkProperties;
-import android.net.Network;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.TypedValue;
@@ -22,10 +17,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.net.Inet4Address;
-import java.net.InetAddress;
-
-/** ☰ → Phone remote: the QR code to scan, the certificate fingerprint, and status. */
+/** ☰ → Phone remote: the QR code and address to open, and status. */
 public final class QrActivity extends Activity implements RemoteServer.Listener {
     private static final int DIM = 0x99FFFFFF;
 
@@ -55,36 +47,27 @@ public final class QrActivity extends Activity implements RemoteServer.Listener 
         status = text("", 15, 0xFFFFC233, false);
         left.addView(status, top(10));
 
-        String url = null;
-        String error = null;
         RemoteServer server = RemoteServer.get(this);
-        try {
-            InetAddress ip = lanAddress();
-            if (ip == null) error = "The TV is not on a network.";
-            else url = server.open(ip, this);
-        } catch (Exception e) {
-            error = "Could not start the remote: " + e.getClass().getSimpleName();
-        }
+        server.ensureRunning();
+        String url = server.url();
+        String error = url == null ? "The TV is not on a network." : server.running() ? null : "Could not start the remote.";
 
         String[] steps = {
-                "1   Scan the code with your phone's camera.",
-                "2   Your phone warns that the connection is not private: the TV made its own certificate. "
-                        + "Check the fingerprint below, then choose Show details → visit this website (iPhone) "
-                        + "or Advanced → Proceed (Android).",
-                "3   Use the remote. When a text box is focused on the TV, tap the text bar on the phone to type.",
+                "1   Scan the code with your phone's camera, or type the address below into its browser.",
+                "2   Use the remote. When a text box is focused on the TV, tap the text bar on the phone to type.",
+                "3   Bookmark the page or add it to the home screen; the address stays the same.",
         };
         for (String s : steps) left.addView(text(s, 16, Color.WHITE, false), top(18));
-        TextView fp = text(url == null ? (error == null ? "" : error)
-                : "Certificate fingerprint (SHA-256)   " + server.fingerprint() + "…", 14, DIM, false);
-        left.addView(fp, top(26));
+        TextView addr = text(error != null ? error : url, 24, error != null ? 0xFFFFC233 : Color.WHITE, true);
+        left.addView(addr, top(26));
         phones = text("", 14, DIM, false);
         left.addView(phones, top(6));
-        left.addView(text("The code changes each time this screen opens; older codes stop working. "
-                + "The remote turns itself off after 10 minutes without use.", 13, DIM, false), top(18));
+        left.addView(text("Any phone on this Wi-Fi can use the remote while AXS Remote is the TV's keyboard. "
+                + "Typed text travels over your home network unencrypted.", 13, DIM, false), top(18));
 
-        if (url != null) {
+        if (url != null && error == null) {
             ImageView qr = new ImageView(this);
-            qr.setImageBitmap(render(Qr.encode(url)));
+            qr.setImageBitmap(Qr.bitmap(url));
             qr.setScaleType(ImageView.ScaleType.FIT_CENTER);
             qr.setPadding(dp(20), dp(20), dp(20), dp(20));
             GradientDrawable bg = new GradientDrawable();
@@ -98,6 +81,7 @@ public final class QrActivity extends Activity implements RemoteServer.Listener 
         setContentView(root);
         refreshStatus();
         onPhonesChanged(0);
+        server.setListener(this);
     }
 
     @Override
@@ -131,39 +115,6 @@ public final class QrActivity extends Activity implements RemoteServer.Listener 
             if (info.getId().equals(id) && info.getPackageName().equals(getPackageName())) return true;
         }
         return false;
-    }
-
-    /** The TV's IPv4 address on the active network (read at runtime, shown only in the QR code). */
-    private InetAddress lanAddress() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (cm == null) return null;
-        Network n = cm.getActiveNetwork();
-        LinkProperties lp = n == null ? null : cm.getLinkProperties(n);
-        if (lp == null) return null;
-        for (LinkAddress a : lp.getLinkAddresses()) {
-            InetAddress ip = a.getAddress();
-            if (ip instanceof Inet4Address && !ip.isLoopbackAddress()) return ip;
-        }
-        return null;
-    }
-
-    private static Bitmap render(boolean[][] m) {
-        int quiet = 4;
-        int n = m.length + quiet * 2;
-        int scale = Math.max(1, 640 / n);
-        Bitmap b = Bitmap.createBitmap(n * scale, n * scale, Bitmap.Config.ARGB_8888);
-        b.eraseColor(Color.WHITE);
-        for (int y = 0; y < m.length; y++) {
-            for (int x = 0; x < m.length; x++) {
-                if (!m[y][x]) continue;
-                for (int dy = 0; dy < scale; dy++) {
-                    for (int dx = 0; dx < scale; dx++) {
-                        b.setPixel((x + quiet) * scale + dx, (y + quiet) * scale + dy, Color.BLACK);
-                    }
-                }
-            }
-        }
-        return b;
     }
 
     private TextView text(String s, int sp, int color, boolean bold) {

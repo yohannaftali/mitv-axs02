@@ -51,10 +51,11 @@ the PC:
 
 ![System monitor: CPU clock, memory, storage, uptime and apps used today](docs/screenshots/system-monitor.webp)
 
-Phone remote (☰ → Phone remote): scan the QR code with an iPhone or Android
-phone and the browser becomes a remote — D-pad, volume, media keys, an
-aerial-TV number pad, and typing with the phone's keyboard whenever a text
-box is focused on the TV. Served by the TV itself over HTTPS; nothing to
+Phone remote: open `http://<TV IP>:8077` on an iPhone or Android phone
+(☰ → Phone remote shows the address and a QR code for it) and the browser
+becomes a remote — D-pad, volume, media keys, an aerial-TV number pad, and
+typing with the phone's keyboard whenever a text box is focused on the TV.
+Served by the TV itself on the home network, no pairing; nothing to
 install:
 
 ![Phone remote: the QR screen on the TV (code hidden here) and the remote page on a phone](docs/screenshots/phone-remote.webp)
@@ -198,7 +199,7 @@ recover if something goes wrong.
 | [`changes/15-tv-bro`](changes/15-tv-bro/README.md) | TV Bro browser, installed from its verified GitHub release |
 | [`changes/32-clock-screensaver`](changes/32-clock-screensaver/README.md) | **AXS Clock** screensaver: large time and date on black, moves once a minute; 13 KB, no permissions |
 | [`changes/33-market-panel`](changes/33-market-panel/README.md) | AXS Clock 1.1: animated background, weather (auto location) and 8 market tiles from free, credited sources; fetches only while showing (needs #32) |
-| [`changes/40-phone-remote`](changes/40-phone-remote/README.md) | **AXS Remote**: phone remote and keyboard in the browser via a QR code (HTTPS on the LAN, own certificate); becomes the TV's keyboard |
+| [`changes/40-phone-remote`](changes/40-phone-remote/README.md) | **AXS Remote**: phone remote and keyboard in the browser at `http://<TV IP>:8077` (QR code on the TV, no pairing); becomes the TV's keyboard |
 
 Building AXS Home needs the Android SDK (build-tools and a platform) and a JDK;
 `sh apps/home/build.sh` uses them directly, with no Gradle.

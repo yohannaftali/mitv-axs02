@@ -136,6 +136,6 @@ Rules:
 | #40 | feat(apps): Phone remote — QR code opens a browser remote and keyboard served by the TV | closed | 2026-11-22 |
 | #42 | feat(launcher): Aerial TV card before HDMI 1 in the inputs bar | closed | 2026-11-22 |
 | #44 | feat(launcher): console-style enlarged focus with centred name in the apps row | closed | 2026-11-22 |
-| #46 | fix(apps): phone remote at a fixed http://<TV IP>:8077 without token or time limit (works on iPhone) | open | 2026-11-23 |
+| #46 | fix(apps): phone remote at a fixed http://<TV IP>:8077 without token or time limit (works on iPhone) | closed | 2026-11-23 |
 | #47 | feat(apps): on-screen keyboard hide key, email/URL suggestions and phone-typing QR | open | 2026-11-23 |
 | #48 | feat(systemui): Screensaver settings in Home settings with selectable market data sources and fresher values | open | 2026-11-23 |

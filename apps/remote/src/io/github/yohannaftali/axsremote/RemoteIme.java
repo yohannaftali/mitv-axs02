@@ -58,6 +58,8 @@ public final class RemoteIme extends InputMethodService {
     public void onCreate() {
         super.onCreate();
         current = this;
+        // The remote is served for as long as Android keeps this keyboard bound.
+        RemoteServer.get(this).ensureRunning();
     }
 
     @Override
