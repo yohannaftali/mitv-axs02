@@ -3,6 +3,18 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-23] — feat(apps): on-screen keyboard hide key, email/URL suggestions and phone-typing QR
+- Issue #47 created on GitHub
+- Scope: apps
+- Labels: enhancement, apps
+- Depends on: #46
+
+## [2026-11-23] — fix(apps): phone remote at a fixed address without token or time limit
+- Issue #46 created on GitHub
+- Scope: apps
+- Labels: bug, apps
+- Owner's report: QR code does not work on iPhone; owner's choice: no session, token or limit, QR only gives the address (LAN trade-off accepted)
+
 ## [2026-11-22] — feat(launcher): console-style enlarged focus in the apps row (#44)
 - Issue #44 (owner's request)
 - Files: apps/home/src/.../HomeActivity.java (focusRow: 1.3x from the left edge, 10 dp nudge, following tiles slide, shared name label centred under the tile, settle and scroll back; row packed from the left), changes/1-fast-home/README.md, docs/screenshots/home-*.webp
