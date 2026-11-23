@@ -3,6 +3,14 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-23] — fix(apps): phone remote at a fixed address without token or time limit (#46)
+- Issue #46
+- Files: apps/remote/ (RemoteServer: plain HTTP + WebSocket on 8077 bound to all interfaces, started by RemoteIme.onCreate, no token, no idle stop, foreign-Origin WebSocket refused; SelfSignedCert removed; QrActivity shows the address and QR; Qr.bitmap; remote.html ws://, keeps reconnecting, reconnects when the page is shown again; version 1.1), changes/40-phone-remote/check.sh (port 8077 must answer HTTP, retries while the keyboard rebinds), changes/40-phone-remote/README.md, README.md, docs/screenshots/phone-remote.webp (QR pixelated, address blurred)
+- Found: `am force-stop` of AXS Remote makes Android switch the keyboard back to Gboard (re-set with `ime set`); don't force-stop it
+- Verified on TV (PC as the phone): page over HTTP, two clients at once, foreign Origin 403, keys without token, server back when AXS Remote becomes the keyboard again; revert → check 1, revert idempotent, apply twice → check 0; no crash
+- Not verified: a real iPhone (owner), reboot
+- TV state left: applied
+
 ## [2026-11-23] — feat(systemui): Screensaver settings in Home settings with selectable market data sources and fresher values
 - Issue #48 created on GitHub
 - Scope: systemui (AXS Clock) and launcher (Home settings)
