@@ -141,4 +141,4 @@ Rules:
 | #48 | feat(systemui): Screensaver settings in Home settings with selectable market data sources and fresher values | closed | 2026-11-23 |
 | #51 | fix(apps): phone remote never connects in browsers (wrong WebSocket accept GUID) | closed | 2026-11-23 |
 | #55 | feat(apps): phone remote modes (Remote, Keyboard, Touchpad, Aerial TV) with modern icons and TV wallpaper theme | open | 2026-11-23 |
-| #56 | feat(launcher): input cards use the TV's own input names and can be renamed in Home settings | open | 2026-11-23 |
+| #56 | feat(launcher): input cards use the TV's own input names and can be renamed in Home settings | closed | 2026-11-23 |

@@ -17,6 +17,7 @@ final class Glyph extends View {
     static final int UP = 5;
     static final int CHECK = 6;
     static final int MOON = 7;
+    static final int INPUT = 8;
 
     private final int kind;
     private final Paint line = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -114,6 +115,18 @@ final class Glyph extends View {
                 path.moveTo(x0 + s * 0.62f, y0 + s * 0.24f);
                 path.lineTo(x0 + s * 0.36f, y0 + s * 0.50f);
                 path.lineTo(x0 + s * 0.62f, y0 + s * 0.76f);
+                c.drawPath(path, line);
+                break;
+            case INPUT:
+                // A screen with an arrow coming in from the left.
+                r.set(x0 + s * 0.30f, y0 + s * 0.20f, x0 + s * 0.90f, y0 + s * 0.70f);
+                c.drawRoundRect(r, s * 0.06f, s * 0.06f, line);
+                c.drawLine(x0 + s * 0.48f, y0 + s * 0.84f, x0 + s * 0.72f, y0 + s * 0.84f, line);
+                path.moveTo(x0 + s * 0.08f, y0 + s * 0.45f);
+                path.lineTo(x0 + s * 0.52f, y0 + s * 0.45f);
+                path.moveTo(x0 + s * 0.40f, y0 + s * 0.33f);
+                path.lineTo(x0 + s * 0.52f, y0 + s * 0.45f);
+                path.lineTo(x0 + s * 0.40f, y0 + s * 0.57f);
                 c.drawPath(path, line);
                 break;
             case MOON:
