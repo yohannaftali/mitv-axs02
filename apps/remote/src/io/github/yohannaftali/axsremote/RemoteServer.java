@@ -224,7 +224,8 @@ final class RemoteServer {
                     peers.add(p);
                 }
                 notifyPhones();
-                p.send("hello:" + (RemoteIme.active() ? "1" : "0"));
+                p.send("hello:" + (RemoteIme.active() ? "1" : "0") + ":" + (PointerService.active() ? "1" : "0"));
+                p.send(theme());
                 p.send(lastEditor);
                 p.loop();
                 synchronized (peers) {
@@ -246,6 +247,23 @@ final class RemoteServer {
                 // Closing anyway.
             }
         }
+    }
+
+    /** "theme:<wallpaper>:<#rrggbb>" from AXS Home, or the default dark blue. */
+    private String theme() {
+        String style = "waves";
+        int accent = 0xFF3D7BFF;
+        try {
+            android.os.Bundle b = app.getContentResolver().call(
+                    android.net.Uri.parse("content://io.github.yohannaftali.axshome.theme"), "theme", null, null);
+            if (b != null) {
+                style = b.getString("wallpaper", style).replace(':', ' ');
+                accent = b.getInt("accent", accent);
+            }
+        } catch (RuntimeException ignored) {
+            // AXS Home missing or older: default theme.
+        }
+        return "theme:" + style + ":" + String.format(Locale.ROOT, "#%06X", accent & 0xFFFFFF);
     }
 
     private static String readHead(InputStream in) throws IOException {

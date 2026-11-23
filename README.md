@@ -69,6 +69,12 @@ install:
 
 ![Phone remote: the QR screen on the TV (code hidden here) and the remote page on a phone](docs/screenshots/phone-remote.webp)
 
+The page has four modes — Remote, Keyboard, Touchpad (a pointer on the TV:
+drag, tap, two-finger scroll) and Aerial TV — with line icons and colours
+that follow the TV's wallpaper:
+
+![Phone remote modes: Remote, Keyboard, Touchpad, Aerial TV](docs/screenshots/phone-remote-modes.webp)
+
 The TV's own on-screen keyboard (AXS Remote, for the physical remote) has a
 Hide key, one-press `@gmail.com` / `.com` suggestions in e-mail and web
 address fields, symbols, and a 📱 key that shows the phone-remote QR code
@@ -215,7 +221,7 @@ recover if something goes wrong.
 | [`changes/15-tv-bro`](changes/15-tv-bro/README.md) | TV Bro browser, installed from its verified GitHub release |
 | [`changes/32-clock-screensaver`](changes/32-clock-screensaver/README.md) | **AXS Clock** screensaver: large time and date on black, moves once a minute; 13 KB, no permissions |
 | [`changes/33-market-panel`](changes/33-market-panel/README.md) | AXS Clock 1.2: animated background, weather (auto location) and up to 8 market tiles; tickers, sources (opt-in Yahoo Finance, your own Twelve Data / Finnhub key), refresh and background set in Home settings → Screensaver; fetches only while showing (needs #32) |
-| [`changes/40-phone-remote`](changes/40-phone-remote/README.md) | **AXS Remote**: phone remote and keyboard in the browser at `http://<TV IP>:8077` (QR code on the TV, no pairing); becomes the TV's keyboard |
+| [`changes/40-phone-remote`](changes/40-phone-remote/README.md) | **AXS Remote**: phone remote in the browser at `http://<TV IP>:8077` (QR code on the TV, no pairing) with Remote, Keyboard, Touchpad and Aerial TV modes; becomes the TV's keyboard and turns on its touchpad pointer (accessibility service) |
 
 Building AXS Home needs the Android SDK (build-tools and a platform) and a JDK;
 `sh apps/home/build.sh` uses them directly, with no Gradle.

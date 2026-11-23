@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pointer_description">Shows a pointer on the TV for the touchpad of the AXS phone remote and presses or scrolls the item under it. Looks at the layout of the app in front only at that moment, on the TV; nothing is stored or sent.</string>
+</resources>

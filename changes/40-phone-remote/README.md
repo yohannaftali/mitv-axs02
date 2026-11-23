@@ -6,14 +6,44 @@ it is a remote served by the TV itself — nothing to install on the phone.
 have to look the IP up. The address stays the same, so bookmark it or add
 it to the phone's home screen (#46).
 
-- **D-pad, OK, Back, Home, Menu**, volume −/mute/+, rewind / play-pause /
-  fast-forward. Holding an arrow repeats it.
-- **Typing:** when a text box is focused on the TV (YouTube search, TV Bro,
-  web forms, Settings), a text bar appears on the phone with the field's
-  hint; tap it and type with the phone keyboard — every change is sent to
-  the TV, Enter submits. (Phones only open their keyboard after a tap.)
-- **Aerial TV** panel (tap *Aerial TV ▾*): CH +/−, Guide, Info and a 0–9
-  number pad, for Live TV with an antenna.
+Four modes, picked from the tab bar at the bottom (#55). Back, Home and
+volume −/+ stay above the tabs in every mode; the last mode is remembered,
+and `?mode=remote|keyboard|touch|tv` opens one directly (for a bookmark).
+
+![The four modes: Remote, Keyboard, Touchpad, Aerial TV](../../docs/screenshots/phone-remote-modes.webp)
+
+- **Remote:** round D-pad with OK, Menu, Mute, Info, rewind / play-pause /
+  fast-forward. Holding an arrow or volume repeats it.
+- **Keyboard:** when a text box is focused on the TV (YouTube search, TV
+  Bro, web forms, Settings), its hint appears and whatever you type is sent
+  to the TV; Enter submits. One-tap `@gmail.com`, `@yahoo.com`,
+  `@outlook.com`, `@icloud.com`, `.com`, `.co.id`, `www.` (an `@…` replaces a
+  domain already typed), Delete (holds to repeat) and Clear. The page
+  switches to this mode by itself when a text box gets focus while you are
+  in Remote mode. (Phones only open their keyboard after a tap.)
+- **Touchpad:** drag to move a pointer on the TV, tap to click, hold to
+  long-press, two fingers to scroll; the pointer hides after 4 seconds. Best
+  in TV Bro and other apps made for touch.
+- **Aerial TV:** CH +/−, Guide, Info, OK, delete and a 0–9 pad for Live TV.
+- **Look:** line icons (inline SVG, no emoji, no external files) and a soft
+  moving light in the colour of the TV's current AXS Home wallpaper (Waves
+  blue, Orbit green, Pop red, Bloom light blue), taken from AXS Home when the
+  phone connects.
+
+### Touchpad pointer (accessibility service)
+
+Android 11 lets an app act inside other apps only as an **accessibility
+service**, so AXS Remote has one, *AXS Remote touchpad*, which `apply.sh`
+turns on (`enabled_accessibility_services`, `accessibility_enabled`;
+`revert.sh` restores both from `baseline.txt`). It draws the pointer as an
+overlay. Gestures (`dispatchGesture`) would be the natural way to tap, but
+Android 11 cancels them on devices without a touchscreen, like this TV, so on
+a tap or a two-finger drag the service finds the item under the pointer in
+the layout of the app in front and presses or scrolls it with accessibility
+actions. **That layout is read only at that moment, on the TV; nothing is
+stored, logged or sent.** Apps that draw their own UI without accessibility
+information (some games, video players) may not react to the touchpad: use
+Remote mode there.
 - On the TV, AXS Remote is also a small on-screen keyboard for the physical
   remote (arrows + OK), because Gboard is not the active keyboard while this
   change is applied (#47):
@@ -79,6 +109,14 @@ Driven from a PC acting as the phone (same protocol as the page):
 Also checked: volume up/down (and restored), HOME from inside apps, page
 served.
 
+#55 (2026-11-23): pointer drawn and moved; tap on the TV Bro tile opened TV
+Bro; in TV Bro a page button was clicked and two-finger drags scrolled the
+page; the hello message reports the pointer; theme follows the wallpaper
+(Pop → `#FF5A64`, back to Waves → `#3D7BFF`); four modes rendered at phone
+size in Edge; revert restores keyboard and accessibility settings (check 1),
+apply twice → check 0. Not checked: a real phone's touch (owner), long-press
+in a real app, reboot.
+
 #46 (2026-11-23): page served over HTTP with `ws://`; two clients at once
 both connected; a WebSocket with a foreign `Origin` refused (403); keys sent
 without any token; the server is back as soon as AXS Remote is the keyboard
@@ -105,7 +143,8 @@ sh changes/40-phone-remote/revert.sh    # Gboard back, AXS Remote removed (☰ i
 ## Baseline and revert
 
 `baseline.txt` records `default_input_method` and `enabled_input_methods`
-(Gboard only) and that AXS Remote was not installed. `revert.sh` sets Gboard
+(Gboard only), that AXS Remote was not installed, and (since #55)
+`enabled_accessibility_services` (unset) and `accessibility_enabled` (0). `revert.sh` sets Gboard
 back, uninstalls AXS Remote, restores
 both settings and compares them with the baseline (exit 1 on a difference,
 2 on a failed TV step). `VERIFY_ONLY=1` only compares.
@@ -116,4 +155,8 @@ Low. If AXS Remote misbehaved, typing on the TV could be affected; the
 physical remote still navigates, Settings → Device Preferences → Keyboard
 can switch back to Gboard, and `revert.sh` (or
 `sh scripts/tv.sh shell ime set com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME`)
-restores it. ADB, the home screen and the network are not touched.
+restores it. The touchpad service only draws a non-touchable pointer and
+acts on request; to turn it off without reverting:
+`sh scripts/tv.sh shell settings delete secure enabled_accessibility_services`
+(or Settings → Device Preferences → Accessibility). ADB, the home screen
+and the network are not touched.

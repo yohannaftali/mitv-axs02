@@ -4,153 +4,383 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#05070D">
 <title>AXS Remote</title>
 <style>
-  :root { --bg:#05070D; --card:#10141D; --line:#232a37; --fg:#fff; --dim:#8b93a3; --accent:#3D7BFF; --ok:#4CD964; --warn:#FFC233; }
+  :root { --bg:#05070D; --accent:#3D7BFF; --glass:rgba(255,255,255,.06); --glass2:rgba(255,255,255,.11);
+    --line:rgba(255,255,255,.09); --fg:#fff; --dim:rgba(255,255,255,.58); --ok:#4CD964; --warn:#FFC233; --bad:#FF6B6B; }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html, body { margin:0; min-height:100%; background:var(--bg); color:var(--fg);
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--fg);
     font:16px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-  /* Fixed-size parts (D-pad, rows) never shrink when the Aerial TV panel makes the page taller; it scrolls instead. */
-  body > * { flex-shrink:0; }
-  body { display:flex; flex-direction:column; align-items:center;
-    padding:max(14px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom)); touch-action:manipulation;
-    -webkit-user-select:none; user-select:none; }
-  header { width:100%; max-width:420px; display:flex; align-items:center; justify-content:space-between; }
-  h1 { font-size:13px; letter-spacing:.2em; color:var(--dim); margin:0; font-weight:700; }
-  #state { font-size:13px; color:var(--dim); display:flex; align-items:center; gap:6px; }
-  #dot { width:9px; height:9px; border-radius:50%; background:#555; }
-  #msg { width:100%; max-width:420px; margin-top:10px; font-size:14px; color:var(--warn); min-height:0; }
-  #typebar { width:100%; max-width:420px; margin-top:12px; display:none; }
-  #typebar.on { display:block; }
-  #typebar label { display:block; font-size:12px; color:var(--dim); margin:0 0 6px 4px; }
-  #text { width:100%; font-size:18px; padding:14px 16px; border-radius:14px; border:2px solid var(--accent);
-    background:var(--card); color:var(--fg); outline:none; -webkit-user-select:text; user-select:text; }
-  #pad { position:relative; width:min(78vw, 300px); height:min(78vw, 300px); margin:22px 0 10px;
-    border-radius:50%; background:radial-gradient(circle at 50% 40%, #1a2130, #0d1119); border:1px solid var(--line); }
-  #pad button { position:absolute; border:0; background:transparent; color:var(--fg); font-size:26px; }
-  #pad .up { top:0; left:30%; width:40%; height:30%; }
-  #pad .down { bottom:0; left:30%; width:40%; height:30%; }
-  #pad .left { left:0; top:30%; width:30%; height:40%; }
-  #pad .right { right:0; top:30%; width:30%; height:40%; }
-  #pad .ok { top:31%; left:31%; width:38%; height:38%; border-radius:50%; background:#242c3b;
-    font-size:18px; font-weight:600; letter-spacing:.05em; box-shadow:0 6px 18px rgba(0,0,0,.45); }
-  .row { width:100%; max-width:420px; display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-top:12px; }
-  .row button, #tv button { height:56px; border-radius:16px; border:1px solid var(--line); background:var(--card);
-    color:var(--fg); font-size:15px; }
-  button:active, button.pressed { background:#2a3346 !important; transform:scale(.97); }
-  #tvtoggle { margin-top:14px; background:none; border:0; color:var(--dim); font-size:14px; }
-  #tv { display:none; width:100%; max-width:420px; margin-top:4px; }
-  #tv.on { display:block; }
-  #tv .grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-top:10px; }
-  #tv button { height:50px; }
-  footer { margin-top:auto; padding-top:16px; font-size:12px; color:var(--dim); text-align:center; }
+  body { display:flex; flex-direction:column; overflow:hidden; -webkit-user-select:none; user-select:none;
+    padding:max(12px, env(safe-area-inset-top)) 16px max(10px, env(safe-area-inset-bottom)); touch-action:manipulation; }
+  body > * { flex-shrink:0; position:relative; z-index:1; }
+
+  /* Theme: soft moving light in the TV wallpaper's accent colour. */
+  #glow { position:fixed; inset:-30%; z-index:0; pointer-events:none; filter:blur(40px); opacity:.55;
+    background:
+      radial-gradient(closest-side at 25% 30%, var(--accent), transparent 70%),
+      radial-gradient(closest-side at 75% 70%, var(--glow2, #0A1E4A), transparent 70%);
+    animation:drift 26s ease-in-out infinite alternate; }
+  [data-style="orbit"] #glow { --glow2:#0B3B2A; }
+  [data-style="pop"] #glow { --glow2:#5A1E8C; opacity:.6; }
+  [data-style="bloom"] #glow { --glow2:#2B4C7E; opacity:.5; }
+  [data-style="custom"] #glow { --glow2:#1A2233; opacity:.4; }
+  @keyframes drift { from { transform:translate(-4%, -3%) rotate(0deg); } to { transform:translate(5%, 4%) rotate(25deg); } }
+  @media (prefers-reduced-motion: reduce) { #glow { animation:none; } }
+
+  header { display:flex; align-items:center; justify-content:space-between; max-width:460px; width:100%; margin:0 auto; }
+  .brand { display:flex; align-items:center; gap:10px; font-size:13px; letter-spacing:.22em; font-weight:700; color:var(--dim); }
+  .brand svg { width:22px; height:22px; color:var(--accent); }
+  #state { display:flex; align-items:center; gap:7px; font-size:12px; color:var(--dim);
+    background:var(--glass); border:1px solid var(--line); padding:6px 10px; border-radius:99px; }
+  #dot { width:8px; height:8px; border-radius:50%; background:#555; box-shadow:0 0 8px currentColor; }
+  #msg { max-width:460px; width:100%; margin:8px auto 0; font-size:13px; color:var(--warn); }
+  #msg:empty { display:none; }
+
+  main { flex:1 1 auto !important; min-height:0; overflow:auto; max-width:460px; width:100%; margin:10px auto 0; }
+  .panel { display:none; flex-direction:column; align-items:center; gap:14px; min-height:100%; padding-bottom:6px; }
+  .panel.on { display:flex; }
+
+  button { font:inherit; color:var(--fg); border:1px solid var(--line); background:var(--glass);
+    border-radius:18px; display:flex; align-items:center; justify-content:center; gap:8px;
+    transition:transform .08s, background .12s, box-shadow .12s; -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); }
+  button svg { width:22px; height:22px; flex:none; }
+  button:active, button.pressed { transform:scale(.95); background:var(--glass2);
+    box-shadow:0 0 0 1px var(--accent) inset, 0 0 18px -4px var(--accent); }
+  .grid { display:grid; gap:10px; width:100%; }
+  .g3 { grid-template-columns:repeat(3, 1fr); }
+  .g3 button, .g4 button { height:54px; font-size:14px; }
+  .g4 { grid-template-columns:repeat(4, 1fr); }
+  .label { font-size:12px; color:var(--dim); }
+
+  /* Remote: round D-pad */
+  #pad { position:relative; width:min(76vw, 290px); aspect-ratio:1; border-radius:50%; margin-top:6px;
+    background:radial-gradient(circle at 50% 35%, rgba(255,255,255,.10), rgba(255,255,255,.03) 70%);
+    border:1px solid var(--line); box-shadow:0 20px 50px -20px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.08); }
+  #pad button { position:absolute; border:0; background:transparent; border-radius:30%; -webkit-backdrop-filter:none; backdrop-filter:none; }
+  #pad button svg { width:30px; height:30px; }
+  #pad .up { top:2%; left:30%; width:40%; height:28%; }
+  #pad .down { bottom:2%; left:30%; width:40%; height:28%; }
+  #pad .left { left:2%; top:30%; width:28%; height:40%; }
+  #pad .right { right:2%; top:30%; width:28%; height:40%; }
+  #pad .ok { top:31%; left:31%; width:38%; height:38%; border-radius:50%; font-weight:700; letter-spacing:.08em;
+    background:radial-gradient(circle at 50% 30%, rgba(255,255,255,.16), rgba(255,255,255,.05));
+    border:1px solid var(--line); box-shadow:0 8px 22px -6px rgba(0,0,0,.7); }
+  #pad .ok:active, #pad .ok.pressed { box-shadow:0 0 0 2px var(--accent), 0 0 24px -2px var(--accent); }
+
+  /* Keyboard */
+  #text { width:100%; font-size:20px; padding:16px 18px; border-radius:18px; border:1.5px solid var(--line);
+    background:rgba(0,0,0,.35); color:var(--fg); outline:none; -webkit-user-select:text; user-select:text; }
+  #text:focus { border-color:var(--accent); box-shadow:0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent); }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; width:100%; }
+  .chips button { height:38px; padding:0 14px; border-radius:99px; font-size:14px; }
+  #kbhint { align-self:flex-start; }
+
+  /* Touchpad */
+  #touch { width:100%; flex:1; min-height:260px; border-radius:26px; border:1px solid var(--line);
+    background:linear-gradient(160deg, rgba(255,255,255,.07), rgba(255,255,255,.02)); touch-action:none;
+    display:flex; align-items:center; justify-content:center; text-align:center; color:var(--dim); font-size:13px; padding:20px;
+    position:relative; overflow:hidden; }
+  #touch.active { border-color:var(--accent); }
+  #touch .ring { position:absolute; width:46px; height:46px; margin:-23px 0 0 -23px; border-radius:50%;
+    border:2px solid var(--accent); opacity:0; pointer-events:none; }
+  #touch .ring.show { animation:ping .35s ease-out; }
+  @keyframes ping { from { opacity:.9; transform:scale(.6); } to { opacity:0; transform:scale(1.4); } }
+
+  /* Always there: back, home, volume; then the mode tabs */
+  #quick { display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; max-width:460px; width:100%; margin:12px auto 0; }
+  #quick button { height:50px; }
+  nav { display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; max-width:460px; width:100%; margin:10px auto 0;
+    background:var(--glass); border:1px solid var(--line); border-radius:22px; padding:6px;
+    -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px); }
+  nav button { flex-direction:column; gap:3px; height:56px; font-size:11px; border:0; background:transparent; color:var(--dim); border-radius:16px; }
+  nav button svg { width:22px; height:22px; }
+  nav button.on { color:#fff; background:color-mix(in srgb, var(--accent) 28%, transparent); }
+  footer { text-align:center; font-size:11px; color:var(--dim); margin-top:8px; }
 </style>
 </head>
-<body>
-<header><h1>AXS REMOTE</h1><div id="state"><span id="dot"></span><span id="st">Connecting…</span></div></header>
+<body data-style="waves">
+<div id="glow"></div>
+<header>
+  <div class="brand"><span data-i="remote"></span>AXS REMOTE</div>
+  <div id="state"><span id="dot"></span><span id="st">Connecting…</span></div>
+</header>
 <div id="msg"></div>
-<div id="typebar"><label id="hint">Type on the TV</label><input id="text" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"></div>
 
-<div id="pad">
-  <button class="up" data-k="UP" aria-label="Up">▲</button>
-  <button class="left" data-k="LEFT" aria-label="Left">◀</button>
-  <button class="ok" data-k="OK">OK</button>
-  <button class="right" data-k="RIGHT" aria-label="Right">▶</button>
-  <button class="down" data-k="DOWN" aria-label="Down">▼</button>
-</div>
-<div class="row"><button data-k="BACK">↩ Back</button><button data-k="HOME">⌂ Home</button><button data-k="MENU">☰ Menu</button></div>
-<div class="row"><button data-k="VOLDOWN">🔉 Vol −</button><button data-k="MUTE">🔇 Mute</button><button data-k="VOLUP">🔊 Vol +</button></div>
-<div class="row"><button data-k="REW">⏪</button><button data-k="PLAY">⏯</button><button data-k="FF">⏩</button></div>
+<main>
+  <section class="panel" id="p-remote">
+    <div id="pad">
+      <button class="up" data-k="UP" data-i="up" aria-label="Up"></button>
+      <button class="left" data-k="LEFT" data-i="left" aria-label="Left"></button>
+      <button class="ok" data-k="OK">OK</button>
+      <button class="right" data-k="RIGHT" data-i="right" aria-label="Right"></button>
+      <button class="down" data-k="DOWN" data-i="down" aria-label="Down"></button>
+    </div>
+    <div class="grid g3"><button data-k="MENU" data-i="menu">Menu</button><button data-k="MUTE" data-i="mute">Mute</button><button data-k="INFO" data-i="info">Info</button></div>
+    <div class="grid g3"><button data-k="REW" data-i="rew" aria-label="Rewind"></button><button data-k="PLAY" data-i="play" aria-label="Play or pause"></button><button data-k="FF" data-i="ff" aria-label="Fast forward"></button></div>
+  </section>
 
-<button id="tvtoggle">Aerial TV ▾</button>
-<div id="tv">
-  <div class="grid"><button data-k="CHUP">CH +</button><button data-k="GUIDE">Guide</button><button data-k="INFO">Info</button></div>
-  <div class="grid"><button data-k="CHDOWN">CH −</button><button data-k="DEL">⌫</button><button data-k="OK">OK</button></div>
-  <div class="grid">
-    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
-    <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
-    <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
-    <span></span><button data-k="0">0</button><span></span>
-  </div>
+  <section class="panel" id="p-keyboard">
+    <span class="label" id="kbhint">Select a text box on the TV, then type here</span>
+    <input id="text" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" placeholder="Type on the TV">
+    <div class="chips">
+      <button data-add="@gmail.com">@gmail.com</button><button data-add="@yahoo.com">@yahoo.com</button>
+      <button data-add="@outlook.com">@outlook.com</button><button data-add="@icloud.com">@icloud.com</button>
+      <button data-add=".com">.com</button><button data-add=".co.id">.co.id</button><button data-add="www.">www.</button>
+    </div>
+    <div class="grid g3"><button id="bksp" data-i="bksp">Delete</button><button id="clear" data-i="clear">Clear</button><button id="go" data-i="enter">Enter</button></div>
+  </section>
+
+  <section class="panel" id="p-touch">
+    <div id="touch"><div>Drag to move the pointer · tap to click<br>hold to long-press · two fingers to scroll</div><div class="ring" id="ring"></div></div>
+    <div class="grid g3"><button id="click" data-i="click">Click</button><button data-k="OK" data-i="ok">OK key</button><button data-k="MENU" data-i="menu">Menu</button></div>
+  </section>
+
+  <section class="panel" id="p-tv">
+    <div class="grid g3">
+      <button data-k="CHUP" data-i="up">CH +</button><button data-k="GUIDE" data-i="guide">Guide</button><button data-k="INFO" data-i="info">Info</button>
+      <button data-k="CHDOWN" data-i="down">CH −</button><button data-k="OK">OK</button><button data-k="DEL" data-i="bksp" aria-label="Delete"></button>
+    </div>
+    <div class="grid g3">
+      <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+      <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+      <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+      <span></span><button data-k="0">0</button><span></span>
+    </div>
+  </section>
+</main>
+
+<div id="quick">
+  <button data-k="BACK" data-i="back" aria-label="Back"></button>
+  <button data-k="HOME" data-i="home" aria-label="Home"></button>
+  <button data-k="VOLDOWN" data-i="voldown" aria-label="Volume down"></button>
+  <button data-k="VOLUP" data-i="volup" aria-label="Volume up"></button>
 </div>
+<nav>
+  <button data-mode="remote" data-i="dpad">Remote</button>
+  <button data-mode="keyboard" data-i="keyboard">Keyboard</button>
+  <button data-mode="touch" data-i="touchpad">Touchpad</button>
+  <button data-mode="tv" data-i="antenna">Aerial TV</button>
+</nav>
 <footer>Served by your TV on your home network · nothing leaves it</footer>
 
 <script>
 (function () {
-  var ws = null, retry = 0, typing = false, sendTimer = null;
-  var dot = document.getElementById("dot"), st = document.getElementById("st"), msg = document.getElementById("msg");
-  var bar = document.getElementById("typebar"), input = document.getElementById("text"), hint = document.getElementById("hint");
+  // Line icons (24×24, stroke = text colour); "f:" paths are filled.
+  var ICONS = {
+    up: "M6 15l6-6 6 6", down: "M6 9l6 6 6-6", left: "M15 6l-6 6 6 6", right: "M9 6l6 6-6 6",
+    back: "M9 14L4 9l5-5M4 9h10.5a5.5 5.5 0 010 11H11",
+    home: "M3 11.5L12 4l9 7.5M5.5 9.5V20h4.5v-5.5h4V20h4.5V9.5",
+    menu: "M4 7h16M4 12h16M4 17h16",
+    voldown: "M4 9.5h3.5L12 6v12l-4.5-3.5H4zM16 12h5",
+    volup: "M4 9.5h3.5L12 6v12l-4.5-3.5H4zM16 12h5M18.5 9.5v5",
+    mute: "M4 9.5h3.5L12 6v12l-4.5-3.5H4zM16 9.5l5 5M21 9.5l-5 5",
+    info: "M12 3a9 9 0 110 18 9 9 0 010-18zM12 11v5.5M12 7.6v.4",
+    rew: "f:M11 6.5v11L4 12zM20 6.5v11L13 12z", ff: "f:M13 6.5v11L20 12zM4 6.5v11L11 12z",
+    play: "f:M6 5.5v13L14 12zM16 6h2.5v12H16z",
+    remote: "M12 3a9 9 0 110 18 9 9 0 010-18zM12 9a3 3 0 110 6 3 3 0 010-6z",
+    dpad: "M12 3a9 9 0 110 18 9 9 0 010-18zM12 9.5a2.5 2.5 0 110 5 2.5 2.5 0 010-5zM12 5.5v1.5M12 17v1.5M5.5 12H7M17 12h1.5",
+    keyboard: "M3.5 6.5h17v11h-17zM7 10h.01M10 10h.01M13 10h.01M16 10h.01M8 14h8",
+    touchpad: "M4 4.5h16v11H4zM4 12.5h16M12 12.5v3M9.5 19.5h5",
+    antenna: "M12 21V10M8.5 6.5a5 5 0 017 0M5.5 3.5a9.5 9.5 0 0113 0M8 21l4-11 4 11",
+    bksp: "M20.5 6H9l-5.5 6L9 18h11.5zM12 9.5l5 5M17 9.5l-5 5",
+    clear: "M5 6.5h14M9 6.5V4.5h6v2M7 6.5l1 13h8l1-13",
+    enter: "M19 5v7.5a3 3 0 01-3 3H5M9 11.5l-4 4 4 4",
+    click: "M9 3.5v6M5.5 6.5h-2M14.5 6.5h-2M6 3.5l1.5 1.5M12 3.5L10.5 5M9 11l3 10 2-4.5 4.5-2z",
+    ok: "M5 12.5l4.5 4.5L19 7.5",
+    guide: "M3.5 5h17v14h-17zM3.5 10h17M9.5 10v9"
+  };
+  function svg(name) {
+    var d = ICONS[name] || "", fill = d.indexOf("f:") === 0;
+    if (fill) d = d.slice(2);
+    return '<svg viewBox="0 0 24 24" fill="' + (fill ? "currentColor" : "none") + '" stroke="currentColor" stroke-width="' +
+      (fill ? 0 : 1.9) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + d + '"/></svg>';
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-i]"), function (el) {
+    el.insertAdjacentHTML("afterbegin", svg(el.getAttribute("data-i")));
+  });
 
-  function state(text, color) { st.textContent = text; dot.style.background = color; }
+  var ws = null, retry = 0, typing = false, sendTimer = null, timer = null, pointer = false, editing = false;
+  var dot = document.getElementById("dot"), st = document.getElementById("st"), msg = document.getElementById("msg");
+  var input = document.getElementById("text"), kbhint = document.getElementById("kbhint");
+
+  function state(text, color) { st.textContent = text; dot.style.background = color; dot.style.color = color; }
   function send(s) { if (ws && ws.readyState === 1) ws.send(s); }
   function buzz() { if (navigator.vibrate) navigator.vibrate(8); }
+  function store(k, v) { try { localStorage.setItem(k, v); } catch (e) { } }
+  function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
 
-  var timer = null;
+  // ---- modes ----
+  // ?mode=touch etc. opens a mode directly (handy as a bookmark); otherwise the last one used.
+  var asked = (location.search.match(/[?&]mode=(remote|keyboard|touch|tv)\b/) || [])[1];
+  var mode = asked || load("axs.mode") || "remote";
+  function setMode(m) {
+    mode = m; store("axs.mode", m);
+    Array.prototype.forEach.call(document.querySelectorAll("nav button"), function (b) {
+      b.classList.toggle("on", b.getAttribute("data-mode") === m);
+    });
+    ["remote", "keyboard", "touch", "tv"].forEach(function (id) {
+      document.getElementById("p-" + id).classList.toggle("on", id === m);
+    });
+    hint();
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("nav button"), function (b) {
+    b.addEventListener("click", function () { buzz(); setMode(b.getAttribute("data-mode")); });
+  });
+  function hint() {
+    if (mode === "touch" && ws && ws.readyState === 1 && !pointer) {
+      msg.textContent = "The touchpad needs AXS Remote's pointer (Accessibility). Run changes/40-phone-remote/apply.sh.";
+    } else if (msg.getAttribute("data-from") !== "conn") {
+      msg.textContent = "";
+    }
+  }
+
+  // ---- connection ----
   function connect() {
     clearTimeout(timer);
     if (ws && ws.readyState < 2) return;
     state(retry ? "Reconnecting…" : "Connecting…", "#FFC233");
     var sock = ws = new WebSocket("ws://" + location.host + "/ws");
-    ws.onopen = function () { retry = 0; state("Connected", "#4CD964"); msg.textContent = ""; };
+    ws.onopen = function () { retry = 0; state("Connected", "#4CD964"); msg.textContent = ""; msg.removeAttribute("data-from"); };
     ws.onmessage = function (e) {
       var d = String(e.data);
       if (d.indexOf("hello:") === 0) {
-        msg.textContent = d === "hello:0" ? "The TV's keyboard is not AXS Remote, so keys cannot be sent. Run the apply script or pick AXS Remote under Settings → Keyboard." : "";
+        var f = d.split(":");
+        pointer = f[2] === "1";
+        if (f[1] === "0") {
+          msg.setAttribute("data-from", "conn");
+          msg.textContent = "The TV's keyboard is not AXS Remote, so keys cannot be sent. Run the apply script or pick AXS Remote under Settings → Keyboard.";
+        }
+        hint();
+      } else if (d.indexOf("theme:") === 0) {
+        var t = d.split(":");
+        document.body.setAttribute("data-style", t[1] || "waves");
+        if (/^#[0-9A-Fa-f]{6}$/.test(t[2] || "")) document.documentElement.style.setProperty("--accent", t[2]);
       } else if (d.indexOf("editor:1:") === 0) {
         var rest = d.slice(9), i = rest.indexOf(":");
-        hint.textContent = (i > 0 ? rest.slice(0, i) : "") || "Type on the TV";
+        editing = true;
+        kbhint.textContent = (i > 0 ? rest.slice(0, i) : "") || "Typing into the TV";
         if (!typing) input.value = i >= 0 ? rest.slice(i + 1) : "";
-        bar.classList.add("on");
+        // A text box on the TV got focus: offer the keyboard.
+        if (mode === "remote") setMode("keyboard");
       } else if (d === "editor:0") {
-        bar.classList.remove("on"); input.blur(); typing = false;
+        editing = false;
+        kbhint.textContent = "Select a text box on the TV, then type here";
+        if (typing) input.blur();
       }
     };
     ws.onclose = function () {
       if (ws !== sock) return;
       ws = null;
       // Keep trying: the TV may be asleep or restarting and comes back at the same address.
-      if (retry > 4) { state("TV not reachable", "#FF6B6B"); msg.textContent = "Is the TV on and on this Wi-Fi? If its address changed, scan the QR code again (☰ → Phone remote)."; }
+      if (retry > 4) { state("TV not reachable", "#FF6B6B"); msg.setAttribute("data-from", "conn"); msg.textContent = "Is the TV on and on this Wi-Fi? If its address changed, scan the QR code again (☰ → Phone remote)."; }
       else state("Reconnecting…", "#FFC233");
       timer = setTimeout(connect, Math.min(5000, 400 * Math.pow(2, retry++)));
     };
   }
 
-  // Buttons: tap sends once; holding an arrow repeats.
-  Array.prototype.forEach.call(document.querySelectorAll("button[data-k]"), function (b) {
-    var k = b.getAttribute("data-k"), rep = null, delay = null;
-    var repeatable = /^(UP|DOWN|LEFT|RIGHT|VOLUP|VOLDOWN|DEL)$/.test(k);
+  // ---- buttons: tap sends once, holding an arrow, volume or delete repeats ----
+  function bindRepeat(b, fire, repeatable) {
+    var rep = null, delay = null;
     function stop() { clearTimeout(delay); clearInterval(rep); b.classList.remove("pressed"); }
     b.addEventListener("pointerdown", function (e) {
-      e.preventDefault(); b.classList.add("pressed"); buzz(); send("key:" + k);
-      if (repeatable) delay = setTimeout(function () { rep = setInterval(function () { send("key:" + k); }, 120); }, 400);
+      e.preventDefault(); b.classList.add("pressed"); buzz(); fire();
+      if (repeatable) delay = setTimeout(function () { rep = setInterval(fire, 110); }, 380);
     });
     ["pointerup", "pointerleave", "pointercancel"].forEach(function (ev) { b.addEventListener(ev, stop); });
     b.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("button[data-k]"), function (b) {
+    var k = b.getAttribute("data-k");
+    bindRepeat(b, function () { send("key:" + k); }, /^(UP|DOWN|LEFT|RIGHT|VOLUP|VOLDOWN|DEL|CHUP|CHDOWN)$/.test(k));
   });
 
-  // Text: the whole field is sent shortly after each change; Enter submits.
+  // ---- keyboard: the whole field is sent shortly after each change ----
+  function sendText() { clearTimeout(sendTimer); send("text:" + input.value); }
   input.addEventListener("focus", function () { typing = true; });
   input.addEventListener("blur", function () { typing = false; });
-  input.addEventListener("input", function () {
-    clearTimeout(sendTimer);
-    sendTimer = setTimeout(function () { send("text:" + input.value); }, 120);
-  });
+  input.addEventListener("input", function () { clearTimeout(sendTimer); sendTimer = setTimeout(sendText, 120); });
   input.addEventListener("keydown", function (e) {
-    if (e.key === "Enter") { e.preventDefault(); clearTimeout(sendTimer); send("text:" + input.value); send("enter"); input.blur(); }
+    if (e.key === "Enter") { e.preventDefault(); sendText(); send("enter"); }
   });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-add]"), function (b) {
+    b.addEventListener("click", function () {
+      var add = b.getAttribute("data-add"), v = input.value;
+      // An "@domain" replaces a domain already typed after "@".
+      if (add.charAt(0) === "@" && v.indexOf("@") >= 0) v = v.slice(0, v.lastIndexOf("@"));
+      input.value = v + add; buzz(); sendText();
+    });
+  });
+  bindRepeat(document.getElementById("bksp"), function () {
+    if (editing || input.value) { input.value = input.value.slice(0, -1); sendText(); } else send("key:DEL");
+  }, true);
+  document.getElementById("clear").addEventListener("click", function () { buzz(); input.value = ""; sendText(); });
+  document.getElementById("go").addEventListener("click", function () { buzz(); sendText(); send("enter"); });
 
-  document.getElementById("tvtoggle").addEventListener("click", function () {
-    var tv = document.getElementById("tv"), on = tv.classList.toggle("on");
-    // The channel panel replaces the D-pad (its OK key is in the panel), so everything fits without scrolling.
-    document.getElementById("pad").style.display = on ? "none" : "";
-    this.textContent = on ? "Aerial TV ▴" : "Aerial TV ▾";
+  // ---- touchpad ----
+  var pad = document.getElementById("touch"), ring = document.getElementById("ring");
+  var pts = {}, moveX = 0, moveY = 0, scrollX = 0, scrollY = 0, frame = 0, lastScroll = 0;
+  var start = 0, travel = 0, longTimer = null, longDone = false, multi = false;
+  function count() { return Object.keys(pts).length; }
+  function flush() {
+    frame = 0;
+    if (moveX || moveY) { send("move:" + moveX.toFixed(1) + ":" + moveY.toFixed(1)); moveX = moveY = 0; }
+    var now = Date.now();
+    if ((scrollX || scrollY) && now - lastScroll > 170) {
+      send("scroll:" + scrollX.toFixed(0) + ":" + scrollY.toFixed(0)); scrollX = scrollY = 0; lastScroll = now;
+    }
+    if (scrollX || scrollY) frame = requestAnimationFrame(flush);
+  }
+  function queue() { if (!frame) frame = requestAnimationFrame(flush); }
+  function flash(x, y) {
+    var r = pad.getBoundingClientRect();
+    ring.style.left = (x - r.left) + "px"; ring.style.top = (y - r.top) + "px";
+    ring.classList.remove("show"); void ring.offsetWidth; ring.classList.add("show");
+  }
+  pad.addEventListener("pointerdown", function (e) {
+    pad.setPointerCapture(e.pointerId);
+    pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+    pad.classList.add("active");
+    if (count() === 1) {
+      start = Date.now(); travel = 0; longDone = false; multi = false;
+      clearTimeout(longTimer);
+      longTimer = setTimeout(function () {
+        if (travel < 10 && !multi) { longDone = true; buzz(); send("long"); flash(e.clientX, e.clientY); }
+      }, 600);
+    } else {
+      multi = true; clearTimeout(longTimer);
+    }
   });
+  pad.addEventListener("pointermove", function (e) {
+    var p = pts[e.pointerId];
+    if (!p) return;
+    var dx = e.clientX - p.x, dy = e.clientY - p.y;
+    p.x = e.clientX; p.y = e.clientY;
+    travel += Math.abs(dx) + Math.abs(dy);
+    if (count() >= 2) { scrollX += dx / count(); scrollY += dy / count(); }
+    else if (!multi) { moveX += dx; moveY += dy; }
+    queue();
+  });
+  function up(e) {
+    if (!pts[e.pointerId]) return;
+    delete pts[e.pointerId];
+    if (count() === 0) {
+      pad.classList.remove("active");
+      clearTimeout(longTimer);
+      if (!multi && !longDone && travel < 10 && Date.now() - start < 350) { buzz(); send("tap"); flash(e.clientX, e.clientY); }
+    }
+  }
+  ["pointerup", "pointercancel"].forEach(function (ev) { pad.addEventListener(ev, up); });
+  bindRepeat(document.getElementById("click"), function () { send("tap"); }, false);
+
   setInterval(function () { send("ping"); }, 25000);
   // Phones pause pages in the background; reconnect at once when the page is shown again.
   document.addEventListener("visibilitychange", function () {
     if (!document.hidden && (!ws || ws.readyState > 1)) { retry = 0; connect(); }
   });
+  setMode(mode);
   connect();
 })();
 </script>
