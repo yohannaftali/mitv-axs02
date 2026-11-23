@@ -25,8 +25,13 @@ Layout since #18:
   move it with LEFT/RIGHT (it swaps places), OK to place. The order is kept across restarts and
   reboots. ☰ → *Reset app order* goes back to the `home.conf` order.
 - **Inputs bar** (bottom): OK switches to that input; DOWN from the apps
-  reaches it. A labelled input shows the label and its port; an unlabelled one
-  only the port. Icons are original drawings (gamepad, HDMI plug, AV jacks,
+  reaches it. A card shows its name and port: the name set in Home settings →
+  **Inputs**, else the TV's own name from Settings → Inputs (read with
+  `TvInputInfo.loadCustomLabel`, refreshed when you come back home), else the
+  `home.conf` label, else only the port (#56). Home settings → Inputs also
+  changes a card's icon (game console, HDMI, AV, antenna) and colour, hides it
+  or resets it; these choices live only in AXS Home's own data. No TV setting
+  is written. Icons are original drawings (gamepad, HDMI plug, AV jacks,
   antenna), not console logos. Long names shrink onto two lines.
 - **Aerial TV** (first card): the TV's tuner input
   (`com.droidlogic.tvinput/.services.ADTVInputService/HW16`, analog + digital).
@@ -41,8 +46,8 @@ Layout since #18:
   (`INPUT_STATE_CONNECTED`), grey otherwise; it updates live. This TV reports
   "standby" for every input, even an empty AV port, so standby counts as grey.
 - **Home settings** (☰ → *Home settings*): only the wallpaper stays visible,
-  dimmed, behind a translucent panel. Categories Clock, Wallpaper, Sound and
-  Screensaver (AXS Clock tickers, sources and keys, see #33 / #48) on
+  dimmed, behind a translucent panel. Categories Clock, Wallpaper, Sound,
+  Inputs and Screensaver (AXS Clock tickers, sources and keys, see #33 / #48) on
   the left (UP/DOWN, RIGHT or OK to enter); option cards on the right with the
   app tiles' white ring and zoom; the selected one has an accent border and a
   check mark. Wallpaper cards are small previews (the focused one animates);

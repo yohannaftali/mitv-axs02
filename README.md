@@ -19,10 +19,11 @@ access, and it opens in about half a second.
   spread evenly in one row that scrolls sideways when you add more. The
   selected app zooms in with a ring around it, console-style. Long-press OK
   to rearrange them on the TV.
-- **Inputs**: Aerial TV (antenna, opens Live TV), PS5 / HDMI 1, Xbox / HDMI 2,
-  Nintendo Switch / HDMI 3, AV. OK switches input; the dot turns green while an
-  HDMI/AV input is sending a picture. Names, icons and colours are one line
-  each in `home.conf`.
+- **Inputs**: Aerial TV (antenna, opens Live TV), HDMI 1–3 and AV. OK
+  switches input; the dot turns green while an HDMI/AV input is sending a
+  picture. Cards use the names you gave the inputs in the TV's own Settings →
+  Inputs; ☰ → Home settings → **Inputs** renames a card, changes its icon and
+  colour, or hides it (defaults in `home.conf`).
 - **Top right**: network status (Ethernet or Wi-Fi) and the ☰ menu (Settings,
   Play Store, Home settings, System monitor, Phone remote, All apps, Reset
   app order).
@@ -43,12 +44,14 @@ Built-in wallpapers (original designs) — or use your own image, GIF or video:
 
 Home settings (☰ → Home settings): the wallpaper keeps moving behind a
 translucent panel; Clock, Wallpaper (with live previews and your own file),
-Sound and Screensaver (tickers, data sources, refresh), in the same focus
+Sound, Inputs (names, icons, colours of the input cards) and Screensaver (tickers, data sources, refresh), in the same focus
 style as the app tiles:
 
 ![Home settings page: categories on the left, wallpaper preview cards on a translucent panel](docs/screenshots/home-settings.webp)
 
 ![Home settings → Screensaver: tickers with their data source](docs/screenshots/screensaver-settings.webp)
+
+![Home settings → Inputs: each card with its icon, port and where its name comes from](docs/screenshots/inputs-settings.webp)
 
 System monitor (☰ → System monitor): CPU clock, memory, storage and uptime,
 live, plus the apps used today. Android 11 does not let apps read other

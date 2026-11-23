@@ -117,6 +117,8 @@ public final class HomeActivity extends Activity {
 
     private final Map<String, String> apps = new LinkedHashMap<>();
     private final List<String[]> inputs = new ArrayList<>();
+    /** Names, icons and colours the inputs bar was last built with; rebuilt on resume when they change. */
+    private String inputsShown = "";
     private final List<String[]> menuItems = new ArrayList<>();
     private int waveTop = 0xFF0A1E4A;
     private int waveAccent = 0xFF3D7BFF;
@@ -246,6 +248,8 @@ public final class HomeActivity extends Activity {
         if (tvInputs != null) {
             for (Map.Entry<String, View> d : dots.entrySet()) paintDot(d.getValue(), inputState(d.getKey()));
         }
+        // Renamed in the TV's own Settings → Inputs (or in Home settings) while away.
+        if (!inputsSignature().equals(inputsShown)) buildInputs();
         // The waves start only after the first frame, so they never delay the home screen.
         root.post(() -> ui.postDelayed(startWaves, 350));
     }
@@ -706,15 +710,81 @@ public final class HomeActivity extends Activity {
         rowLp.leftMargin = -dp(6);
         rowLp.rightMargin = -dp(6);
         inputBar.addView(row, rowLp);
-        for (String[] e : inputs) {
-            String label = field(e, 1);
-            String port = field(e, 2);
-            String id = field(e, 3);
-            if (tvInputs != null && tvInputs.getTvInputInfo(id) == null) continue;
-            int color = parseColor(field(e, 5), 0xFF5A6478);
-            row.addView(inputCard(label, port, id, IconView.parse(field(e, 4), port), color));
+        for (Input in : inputList()) {
+            if (in.hidden) continue;
+            row.addView(inputCard(in.nameFrom.equals("port") ? "" : in.name, in.port, in.id, IconView.parse(in.icon, in.port), parseColor(in.color, 0xFF5A6478)));
         }
+        inputsShown = inputsSignature();
         inputBar.setVisibility(row.getChildCount() == 0 ? View.GONE : View.VISIBLE);
+    }
+
+    static final String PREF_INPUT = "input.";
+
+    /** One input card as it is shown: home.conf entry plus the TV's and the owner's names. */
+    static final class Input {
+        String id;
+        String port;
+        String name;
+        /** Where the name comes from: "yours", "tv", "conf" or "port". */
+        String nameFrom;
+        String tvName;
+        String confName;
+        String icon;
+        String color;
+        boolean hidden;
+    }
+
+    /**
+     * The inputs from home.conf that exist on this TV. Name: the one set in Home
+     * settings, else the TV's own label (Settings → Inputs), else home.conf's,
+     * else the port.
+     */
+    List<Input> inputList() {
+        List<Input> out = new ArrayList<>();
+        for (String[] e : inputs) {
+            String id = field(e, 3);
+            android.media.tv.TvInputInfo info = tvInputs == null ? null : tvInputs.getTvInputInfo(id);
+            if (tvInputs != null && info == null) continue;
+            Input in = new Input();
+            in.id = id;
+            in.port = field(e, 2);
+            in.confName = field(e, 1);
+            CharSequence custom = info == null ? null : info.loadCustomLabel(this);
+            in.tvName = custom == null ? "" : custom.toString().trim();
+            String yours = prefs().getString(PREF_INPUT + id + ".name", "");
+            if (!yours.isEmpty()) {
+                in.name = yours;
+                in.nameFrom = "yours";
+            } else if (!in.tvName.isEmpty()) {
+                in.name = in.tvName;
+                in.nameFrom = "tv";
+            } else if (!in.confName.isEmpty()) {
+                in.name = in.confName;
+                in.nameFrom = "conf";
+            } else {
+                in.name = in.port;
+                in.nameFrom = "port";
+            }
+            in.icon = prefs().getString(PREF_INPUT + id + ".icon", field(e, 4));
+            in.color = prefs().getString(PREF_INPUT + id + ".color", field(e, 5));
+            in.hidden = prefs().getBoolean(PREF_INPUT + id + ".hidden", false);
+            out.add(in);
+        }
+        return out;
+    }
+
+    private String inputsSignature() {
+        StringBuilder b = new StringBuilder();
+        for (Input in : inputList()) {
+            b.append(in.id).append('|').append(in.name).append('|').append(in.icon).append('|')
+                    .append(in.color).append('|').append(in.hidden).append(';');
+        }
+        return b.toString();
+    }
+
+    /** Called by Home settings after an input was renamed, recoloured or hidden. */
+    void applyInputs() {
+        buildInputs();
     }
 
     private View inputCard(String label, String port, String id, int icon, int color) {
@@ -1153,6 +1223,10 @@ public final class HomeActivity extends Activity {
 
     private static String field(String[] e, int i) {
         return i < e.length ? e[i].trim() : "";
+    }
+
+    int color(String s, int fallback) {
+        return parseColor(s, fallback);
     }
 
     private static int parseColor(String s, int fallback) {

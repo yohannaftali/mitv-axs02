@@ -3,6 +3,14 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-23] — feat(launcher): input cards use the TV input names and can be renamed (#56)
+- Issue #56
+- Files: apps/home/src/.../HomeActivity.java (inputList: Home settings name, then TvInputInfo.loadCustomLabel, then home.conf, then port; icon/colour/hidden overrides in AXS Home prefs; bar rebuilt on resume when names change), SettingsPanel.java (Inputs category: list, rename, icon, colour, show/hide, reset), Glyph.java (INPUT icon), apps/home/config/home.conf (comment), README.md, changes/1-fast-home/README.md, docs/screenshots/inputs-settings.webp
+- Deviation: icons limited to the four existing drawings (game console, HDMI, AV, antenna); no new TV/PC/set-top drawings
+- Verified on TV: cards show the TV names (PS5, XBox, Game console); rename HDMI 3 to Switch, colour Sky, hide AV reflected on home; a TV-side label change (set and restored) appears after returning home; reset and show restore the defaults; cold start 617-662 ms (was 601-637); apply twice, check.sh 0; no crash; no TV setting written by AXS Home
+- Not verified: reboot; revert.sh of #1 not re-run (unchanged by this issue)
+- TV state left: applied, no overrides set
+
 ## [2026-11-23] — feat(apps): phone remote modes (Remote, Keyboard, Touchpad, Aerial TV) with modern icons and TV wallpaper theme
 - Issue #55 created on GitHub
 - Labels: enhancement, apps

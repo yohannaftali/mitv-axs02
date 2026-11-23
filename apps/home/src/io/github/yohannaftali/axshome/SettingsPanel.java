@@ -50,7 +50,7 @@ import java.util.Map;
 
 /**
  * "Home settings": clock format, wallpaper style, own wallpaper file, video
- * sound, and the AXS Clock screensaver (tickers, data sources, refresh). Console-style layout: the live wallpaper behind a dimmed screen,
+ * sound, input card names, and the AXS Clock screensaver (tickers, data sources, refresh). Console-style layout: the live wallpaper behind a dimmed screen,
  * categories on the left, option cards on a translucent panel on the right,
  * with the same white focus ring and zoom as the app tiles.
  */
@@ -64,13 +64,15 @@ final class SettingsPanel {
     private static final int CLOCK = 0;
     private static final int WALLPAPER = 1;
     private static final int SOUND = 2;
-    private static final int SCREENSAVER = 3;
-    private static final String[] CATEGORY = {"Clock", "Wallpaper", "Sound", "Screensaver"};
-    private static final int[] CATEGORY_ICON = {Glyph.CLOCK, Glyph.WALLPAPER, Glyph.SOUND, Glyph.MOON};
+    private static final int INPUTS = 3;
+    private static final int SCREENSAVER = 4;
+    private static final String[] CATEGORY = {"Clock", "Wallpaper", "Sound", "Inputs", "Screensaver"};
+    private static final int[] CATEGORY_ICON = {Glyph.CLOCK, Glyph.WALLPAPER, Glyph.SOUND, Glyph.INPUT, Glyph.MOON};
     private static final String[] CATEGORY_HINT = {
             "How the time is shown on the home screen.",
             "Moves slowly behind the home screen. Pick one to see it here at once.",
             "Sound of video wallpapers you add yourself.",
+            "Names, icons and colours of the input cards at the bottom of the home screen.",
             "AXS Clock: what it shows, where the prices come from, how often they refresh.",
     };
 
@@ -138,6 +140,7 @@ final class SettingsPanel {
         category = CLOCK;
         browsing = false;
         saverView = null;
+        inputView = null;
         render(-1);
         home.showHomeContent(false);
         dialog.show();
@@ -174,10 +177,11 @@ final class SettingsPanel {
             row.addView(label, lp);
             row.setOnFocusChangeListener((v, has) -> {
                 if (rendering) return;
-                if (has && (category != index || browsing || saverView != null)) {
+                if (has && (category != index || browsing || saverView != null || inputView != null)) {
                     category = index;
                     browsing = false;
                     saverView = null;
+                    inputView = null;
                     render(-1);
                 }
                 styleCategories();
@@ -266,6 +270,7 @@ final class SettingsPanel {
             if (category == CLOCK) renderClock();
             else if (category == WALLPAPER) renderWallpaper();
             else if (category == SOUND) renderSound();
+            else if (category == INPUTS) renderInputs();
             else renderScreensaver();
         }
         styleCategories();
@@ -457,6 +462,13 @@ final class SettingsPanel {
             if (category == SCREENSAVER && saverView != null && !browsing) {
                 saverView = null;
                 render(0);
+            } else if (category == INPUTS && inputView != null && !browsing) {
+                String back = inputView;
+                inputView = null;
+                render(0);
+                for (int i = 0; i < home.inputList().size(); i++) {
+                    if (home.inputList().get(i).id.equals(back)) focusPane(i);
+                }
             } else if (browsing) {
                 if (browseDir == null) {
                     browsing = false;
@@ -491,6 +503,128 @@ final class SettingsPanel {
             }
         }
         return false;
+    }
+
+    // ---- inputs (names, icons, colours of the cards on the home screen) ----
+
+    private static final String[] ICONS = {"gamepad", "hdmi", "av", "antenna"};
+    private static final String[] ICON_NAMES = {"Game console", "HDMI", "AV", "Antenna"};
+    private static final String[] COLORS = {"#0070D1", "#107C10", "#E60012", "#3BB3FF", "#FF9F0A", "#AF52DE", "#5A6478"};
+    private static final String[] COLOR_NAMES = {"Blue", "Green", "Red", "Sky", "Orange", "Purple", "Grey"};
+
+    /** null: the list; otherwise the id of the input being edited. */
+    private String inputView;
+
+    private void renderInputs() {
+        if (inputView != null) {
+            renderInputEdit();
+            return;
+        }
+        List<HomeActivity.Input> list = home.inputList();
+        if (list.isEmpty()) {
+            pane.addView(home.label("No inputs from home.conf exist on this TV.", 16, DIM, false));
+            return;
+        }
+        for (HomeActivity.Input in : list) {
+            String from = in.nameFrom.equals("yours") ? "your name" : in.nameFrom.equals("tv") ? "TV's name" : "default name";
+            View c = card(inputRow(in, in.port + "   ·   " + from + (in.hidden ? "   ·   hidden" : "")), -1, 72, false, () -> {
+                inputView = in.id;
+                render(0);
+            });
+            if (in.hidden) c.setAlpha(0.55f);
+            pane.addView(c, rowLp());
+        }
+        TextView note = home.label("Names set on the TV (Settings → Inputs) are used unless you set one here.", 13, DIM, false);
+        note.setPadding(dp(8), dp(6), 0, 0);
+        pane.addView(note);
+    }
+
+    private View inputRow(HomeActivity.Input in, String sub) {
+        LinearLayout inner = new LinearLayout(home);
+        inner.setOrientation(LinearLayout.HORIZONTAL);
+        inner.setGravity(Gravity.CENTER_VERTICAL);
+        inner.setPadding(dp(18), 0, 0, 0);
+        inner.addView(new IconView(home, IconView.parse(in.icon, in.port), home.color(in.color, 0xFF5A6478)),
+                new LinearLayout.LayoutParams(dp(40), dp(40)));
+        LinearLayout texts = twoLines(in.name, sub);
+        texts.setPadding(dp(16), 0, dp(20), 0);
+        inner.addView(texts, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f));
+        return inner;
+    }
+
+    private HomeActivity.Input editedInput() {
+        for (HomeActivity.Input in : home.inputList()) if (in.id.equals(inputView)) return in;
+        return null;
+    }
+
+    private void putInput(String key, String value, int focus) {
+        SharedPreferences.Editor e = prefs.edit();
+        if (value == null) e.remove(HomeActivity.PREF_INPUT + inputView + "." + key);
+        else e.putString(HomeActivity.PREF_INPUT + inputView + "." + key, value);
+        e.apply();
+        home.applyInputs();
+        render(focus);
+    }
+
+    private void renderInputEdit() {
+        HomeActivity.Input in = editedInput();
+        if (in == null) {
+            inputView = null;
+            renderInputs();
+            return;
+        }
+        paneTitle.setText(in.name);
+        paneHint.setText(in.port + " · BACK to go back");
+        pane.addView(card(inputRow(in, in.port), -1, 72, false, () -> { }), rowLp());
+
+        EditText field = new EditText(home);
+        field.setSingleLine(true);
+        field.setTextColor(Color.WHITE);
+        field.setHintTextColor(DIM);
+        field.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 20);
+        field.setPadding(dp(18), 0, dp(18), 0);
+        field.setBackground(home.rounded(0x1FFFFFFF, Color.WHITE, RADIUS, 2));
+        field.setImeOptions(EditorInfo.IME_ACTION_DONE);
+        field.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+        field.setText(in.nameFrom.equals("yours") ? in.name : "");
+        field.setHint("New name (now: " + in.name + ")");
+        Runnable save = () -> {
+            String v = field.getText().toString().trim();
+            if (v.length() > 40) v = v.substring(0, 40);
+            putInput("name", v.isEmpty() ? null : v, 2);
+        };
+        field.setOnEditorActionListener((v, action, ev) -> {
+            save.run();
+            return true;
+        });
+        items.add(field);
+        LinearLayout.LayoutParams flp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(60));
+        flp.topMargin = dp(8);
+        pane.addView(field, flp);
+        pane.addView(card(twoLines("Save name", "Empty uses the TV's name"), -1, 64, false, save), rowLpTop());
+
+        int icon = Math.max(0, Arrays.asList(ICONS).indexOf(in.icon));
+        pane.addView(card(twoLines("Icon: " + ICON_NAMES[icon], "OK to change"), -1, 64, false, () ->
+                putInput("icon", ICONS[(icon + 1) % ICONS.length], 3)), rowLp());
+        int color = Math.max(0, Arrays.asList(COLORS).indexOf(in.color.toUpperCase(Locale.ROOT)));
+        pane.addView(card(twoLines("Colour: " + COLOR_NAMES[color], "OK to change"), -1, 64, false, () ->
+                putInput("color", COLORS[(color + 1) % COLORS.length], 4)), rowLp());
+        pane.addView(toggleRow("Show on the home screen", in.hidden ? "Hidden" : "Shown", !in.hidden, () -> {
+            prefs.edit().putBoolean(HomeActivity.PREF_INPUT + inputView + ".hidden", !in.hidden).apply();
+            home.applyInputs();
+            render(5);
+        }), rowLp());
+        if (in.nameFrom.equals("yours") || prefs.contains(HomeActivity.PREF_INPUT + inputView + ".icon")
+                || prefs.contains(HomeActivity.PREF_INPUT + inputView + ".color")) {
+            String tv = !in.tvName.isEmpty() ? in.tvName : !in.confName.isEmpty() ? in.confName : in.port;
+            pane.addView(card(twoLines("Reset", "Back to \"" + tv + "\" with the default icon and colour"), -1, 64, false, () -> {
+                prefs.edit().remove(HomeActivity.PREF_INPUT + inputView + ".name")
+                        .remove(HomeActivity.PREF_INPUT + inputView + ".icon")
+                        .remove(HomeActivity.PREF_INPUT + inputView + ".color").apply();
+                home.applyInputs();
+                render(2);
+            }), rowLp());
+        }
     }
 
     // ---- screensaver (AXS Clock's settings, through its provider) ----
