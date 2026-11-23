@@ -3,6 +3,14 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-23] — feat(apps): phone remote modes (Remote, Keyboard, Touchpad, Aerial TV) with modern icons and TV wallpaper theme
+- Issue #55 created on GitHub
+- Labels: enhancement, apps
+
+## [2026-11-23] — feat(launcher): input cards use the TV's own input names and can be renamed in Home settings
+- Issue #56 created on GitHub
+- Labels: enhancement, launcher
+
 ## [2026-11-23] — feat(systemui): Screensaver settings with selectable market data sources (#48)
 - Issue #48
 - Files: apps/clock/ (Catalogue, SettingsProvider with signature permission, Face split out of ClockDream, PreviewActivity, Conf owner settings + secrets, Feed: Yahoo Finance chart API, Twelve Data, Finnhub, CoinGecko demo key, per-source minimum intervals, quote "as of" times; 1.2), apps/home/ (SettingsPanel Screensaver category, Glyph.MOON, uses-permission), changes/33-market-panel/{README.md,apply.sh}, changes/1-fast-home/README.md, README.md, docs/screenshots/{screensaver-settings,screensaver}.webp (weather line blurred)
