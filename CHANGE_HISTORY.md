@@ -3,6 +3,14 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-23] — feat(apps): phone remote modes, touchpad pointer and wallpaper theme (#55)
+- Issue #55
+- Files: apps/remote/assets/remote.html (four modes with tab bar, inline SVG icons, theme glow, ?mode=), src/.../PointerService.java (new accessibility service: overlay pointer, click / long-click / scroll via accessibility actions), RemoteServer.java (hello reports the pointer, theme message from AXS Home), RemoteIme.java (move/scroll/tap/long commands), res/xml/pointer.xml, res/values/strings.xml, AndroidManifest.xml (1.3); apps/home/ (ThemeProvider with signature permission, manifest); changes/40-phone-remote/{apply,revert,check}.sh, baseline.txt (accessibility values), README.md; README.md; docs/screenshots/phone-remote{,-modes}.webp
+- Found: Android 11 cancels accessibility gestures (dispatchGesture) on devices without a touchscreen feature, which this TV lacks; the pointer presses and scrolls through accessibility node actions instead, which needs window content (read on the TV at that moment only)
+- Verified on TV (PC clients): pointer moves and hides; tap opens TV Bro from AXS Home; TV Bro page button clicked; two-finger drag scrolls the page; theme pop #FF5A64 and back to waves #3D7BFF; four modes rendered at phone size; revert restores keyboard and accessibility (check 1), revert idempotent, apply twice (check 0); no crash
+- Not verified: a real phone touchpad (owner), long-press in a real app, reboot
+- TV state left: applied
+
 ## [2026-11-23] — feat(launcher): input cards use the TV input names and can be renamed (#56)
 - Issue #56
 - Files: apps/home/src/.../HomeActivity.java (inputList: Home settings name, then TvInputInfo.loadCustomLabel, then home.conf, then port; icon/colour/hidden overrides in AXS Home prefs; bar rebuilt on resume when names change), SettingsPanel.java (Inputs category: list, rename, icon, colour, show/hide, reset), Glyph.java (INPUT icon), apps/home/config/home.conf (comment), README.md, changes/1-fast-home/README.md, docs/screenshots/inputs-settings.webp

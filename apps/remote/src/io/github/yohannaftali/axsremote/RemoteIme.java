@@ -121,6 +121,20 @@ public final class RemoteIme extends InputMethodService {
             if (current != null) current.replaceText(msg.substring(5));
         } else if (msg.equals("enter")) {
             if (current != null) current.enter();
+        } else if (msg.startsWith("move:") || msg.startsWith("scroll:")) {
+            // Touchpad: "move:dx:dy" / "scroll:dx:dy" in phone pixels.
+            String[] f = msg.split(":");
+            if (f.length != 3) return;
+            try {
+                float dx = Math.max(-400f, Math.min(400f, Float.parseFloat(f[1])));
+                float dy = Math.max(-400f, Math.min(400f, Float.parseFloat(f[2])));
+                if (f[0].equals("move")) PointerService.move(dx, dy);
+                else PointerService.scroll(dx, dy);
+            } catch (NumberFormatException ignored) {
+                // Not a number: ignore.
+            }
+        } else if (msg.equals("tap") || msg.equals("long")) {
+            PointerService.tap(msg.equals("long"));
         }
     }
 

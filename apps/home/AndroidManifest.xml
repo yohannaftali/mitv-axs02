@@ -8,6 +8,11 @@
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
     <!-- Read-only network status for the top bar icon; there is no INTERNET permission. -->
+    <!-- Only apps signed with the same key (AXS Remote) may read the wallpaper and accent colour. -->
+    <permission
+        android:name="io.github.yohannaftali.axshome.permission.THEME"
+        android:protectionLevel="signature" />
+
     <!-- Screensaver settings live in AXS Clock (same signing key); AXS Home itself stays offline. -->
     <uses-permission android:name="io.github.yohannaftali.axsclock.permission.SETTINGS" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -53,5 +58,12 @@
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- The phone remote page follows the home screen's wallpaper (#55). -->
+        <provider
+            android:name=".ThemeProvider"
+            android:authorities="io.github.yohannaftali.axshome.theme"
+            android:exported="true"
+            android:permission="io.github.yohannaftali.axshome.permission.THEME" />
     </application>
 </manifest>

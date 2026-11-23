@@ -1,6 +1,7 @@
 #!/bin/sh
-# Exit 0 when AXS Remote is installed, is the TV's keyboard and serves the
-# remote on port 8077 (HTTP), 1 when not, 2 when the TV cannot be checked.
+# Exit 0 when AXS Remote is installed, is the TV keyboard, serves the remote
+# on port 8077 (HTTP) and its touchpad pointer is on; 1 when not; 2 when the
+# TV cannot be checked.
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 TV="$ROOT/scripts/tv.sh"
@@ -20,4 +21,10 @@ http=$(sh "$TV" shell 'for i in 1 2 3 4 5 6 7 8; do
 done
 echo "$r"') || { echo "cannot check: TV unreachable or adb failed"; exit 2; }
 printf '%s\n' "$http" | grep -q '^HTTP/1.1 200' || { echo "not applied: nothing answers HTTP on port 8077"; exit 1; }
-echo "ok: AXS Remote is installed, is the keyboard and serves http on port 8077"
+a11y=$(sh "$TV" shell "settings get secure enabled_accessibility_services; settings get secure accessibility_enabled") \
+  || { echo "cannot check: TV unreachable or adb failed"; exit 2; }
+a11y=$(printf '%s\n' "$a11y" | tr -d '\r')
+printf '%s\n' "$a11y" | head -n1 | tr ':' '\n' | grep -qx "$PKG/.PointerService" \
+  || { echo "not applied: touchpad pointer (accessibility service) is off"; exit 1; }
+[ "$(printf '%s\n' "$a11y" | sed -n 2p)" = 1 ] || { echo "not applied: accessibility is off"; exit 1; }
+echo "ok: AXS Remote is installed, is the keyboard, serves http on port 8077 and has its touchpad pointer"
