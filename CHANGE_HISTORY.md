@@ -3,6 +3,14 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-23] — feat(apps): on-screen keyboard hide key, suggestions and phone QR (#47)
+- Issue #47
+- Files: apps/remote/src/.../RemoteIme.java (rows built per field: suggestion row for e-mail / web e-mail / URI fields, numbers, letters or #+= symbols, bottom row ⇧ #+= space ⌫ Hide 📱 done; UP from the top row hides; 📱 QR panel with the address, OK/BACK return; "@domain" chips replace a typed domain), AndroidManifest.xml (1.2), changes/40-phone-remote/README.md, README.md, docs/screenshots/keyboard.webp (address blurred)
+- Deviation from the issue: the "123" key became "#+=" (numbers already have their own row); the hide key is labelled "Hide ▾"
+- Verified on TV (TV Bro, local test form): e-mail chips and @-replacement, URL chips, no chips in password/plain fields, Hide and UP-to-hide then D-pad reaches the app, 📱 panel and BACK, symbols, phone text into the field; revert → check 1, apply → check 0; no crash
+- Not verified: YouTube search and TV Settings with the new layout, reboot
+- TV state left: applied
+
 ## [2026-11-23] — fix(apps): phone remote at a fixed address without token or time limit (#46)
 - Issue #46
 - Files: apps/remote/ (RemoteServer: plain HTTP + WebSocket on 8077 bound to all interfaces, started by RemoteIme.onCreate, no token, no idle stop, foreign-Origin WebSocket refused; SelfSignedCert removed; QrActivity shows the address and QR; Qr.bitmap; remote.html ws://, keeps reconnecting, reconnects when the page is shown again; version 1.1), changes/40-phone-remote/check.sh (port 8077 must answer HTTP, retries while the keyboard rebinds), changes/40-phone-remote/README.md, README.md, docs/screenshots/phone-remote.webp (QR pixelated, address blurred)
