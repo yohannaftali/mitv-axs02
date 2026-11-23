@@ -16,7 +16,20 @@ it to the phone's home screen (#46).
   number pad, for Live TV with an antenna.
 - On the TV, AXS Remote is also a small on-screen keyboard for the physical
   remote (arrows + OK), because Gboard is not the active keyboard while this
-  change is applied.
+  change is applied (#47):
+  - **Hide ▾** (or UP from the top row) puts it away, so the D-pad reaches
+    the app's other buttons; OK on the field brings it back. BACK and
+    *done* still close it too.
+  - **Suggestions** above the keys in e-mail fields (`@gmail.com`,
+    `@yahoo.com`, `@outlook.com`, `@icloud.com`, `.com`, `.co.id`; an
+    `@…` chip replaces a domain already typed) and web-address fields
+    (`www.`, `.com`, `.co.id`, `https://`). None in password or plain
+    fields; nothing typed is learned or stored.
+  - **#+=** switches to symbols; **📱** shows the phone-remote QR code and
+    address in place of the keys (OK or BACK returns), to type on the phone
+    instead.
+
+![AXS Remote keyboard in an e-mail field, with the suggestion row](../../docs/screenshots/keyboard.webp)
 
 ## How it works
 
@@ -71,6 +84,15 @@ both connected; a WebSocket with a foreign `Origin` refused (403); keys sent
 without any token; the server is back as soon as AXS Remote is the keyboard
 again (switching keyboards away and back). Not checked here: a real iPhone
 (owner), a reboot.
+
+#47 (2026-11-23), in TV Bro on a local test form: e-mail field shows the
+suggestion row; `name@` then `@yahoo.com` then `@gmail.com` gives
+`name@gmail.com`; URL field `www.` + `example` + `.com` gives
+`www.example.com`; password and plain text fields show no suggestions;
+Hide ▾ and UP from the top row close the keyboard and the D-pad then moves
+TV Bro's cursor; 📱 shows the QR panel and BACK returns to the keys; #+=
+symbols layer; text from the phone lands in the field. Not checked: YouTube
+search and TV Settings with the new layout.
 
 ## Use
 

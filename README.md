@@ -60,6 +60,13 @@ install:
 
 ![Phone remote: the QR screen on the TV (code hidden here) and the remote page on a phone](docs/screenshots/phone-remote.webp)
 
+The TV's own on-screen keyboard (AXS Remote, for the physical remote) has a
+Hide key, one-press `@gmail.com` / `.com` suggestions in e-mail and web
+address fields, symbols, and a 📱 key that shows the phone-remote QR code
+to type on the phone instead:
+
+![AXS Remote keyboard in an e-mail field, with the suggestion row](docs/screenshots/keyboard.webp)
+
 ## Target device
 
 | | |
