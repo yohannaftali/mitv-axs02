@@ -3,6 +3,13 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-23] — feat(systemui): Screensaver settings in Home settings with selectable market data sources and fresher values
+- Issue #48 created on GitHub
+- Scope: systemui (AXS Clock) and launcher (Home settings)
+- Labels: enhancement, systemui
+- Owner's report: market data looked old (ECB FX is daily; feed only runs while the screensaver shows)
+- Yahoo Finance and keyed providers opt-in by owner's choice; TradingView login left out (no public API, scraping against its terms, password on the TV)
+
 ## [2026-11-23] — feat(apps): on-screen keyboard hide key, email/URL suggestions and phone-typing QR
 - Issue #47 created on GitHub
 - Scope: apps
