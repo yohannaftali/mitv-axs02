@@ -35,7 +35,7 @@ import java.util.Locale;
  */
 final class RemoteServer {
     static final int PORT = 8077;
-    private static final String WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC11B05";
+    private static final String WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
     private static RemoteServer instance;
 
     interface Listener {

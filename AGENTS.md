@@ -139,3 +139,4 @@ Rules:
 | #46 | fix(apps): phone remote at a fixed http://<TV IP>:8077 without token or time limit (works on iPhone) | closed | 2026-11-23 |
 | #47 | feat(apps): on-screen keyboard hide key, email/URL suggestions and phone-typing QR | closed | 2026-11-23 |
 | #48 | feat(systemui): Screensaver settings in Home settings with selectable market data sources and fresher values | open | 2026-11-23 |
+| #51 | fix(apps): phone remote never connects in browsers (wrong WebSocket accept GUID) | closed | 2026-11-23 |
