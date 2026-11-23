@@ -3,6 +3,15 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-23] — fix(apps): phone remote never connects in browsers (#51)
+- Issue #51 (owner's report: page shown, keeps connecting, "TV not reachable")
+- Cause: RemoteServer.WS_GUID was wrong since #40 (ends C11B05 instead of RFC 6455's C85B11), so browsers rejected every handshake; the PC test client never checked Sec-WebSocket-Accept
+- Files: apps/remote/src/.../RemoteServer.java, apps/remote/AndroidManifest.xml (1.2.1)
+- Verified: headless Edge loads the page and shows "Connected"; Python `websockets` (validates the handshake) connects and gets pong; foreign Origin refused; check.sh 0
+- Not verified: owner's phone
+- TV state left: applied
+- Lesson: test the remote with a validating client (Python `websockets` or a real browser), not the hand-written socket client
+
 ## [2026-11-23] — feat(apps): on-screen keyboard hide key, suggestions and phone QR (#47)
 - Issue #47
 - Files: apps/remote/src/.../RemoteIme.java (rows built per field: suggestion row for e-mail / web e-mail / URI fields, numbers, letters or #+= symbols, bottom row ⇧ #+= space ⌫ Hide 📱 done; UP from the top row hides; 📱 QR panel with the address, OK/BACK return; "@domain" chips replace a typed domain), AndroidManifest.xml (1.2), changes/40-phone-remote/README.md, README.md, docs/screenshots/keyboard.webp (address blurred)
