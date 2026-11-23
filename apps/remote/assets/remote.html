@@ -76,7 +76,6 @@
 
 <script>
 (function () {
-  var token = (location.hash || "").slice(1);
   var ws = null, retry = 0, typing = false, sendTimer = null;
   var dot = document.getElementById("dot"), st = document.getElementById("st"), msg = document.getElementById("msg");
   var bar = document.getElementById("typebar"), input = document.getElementById("text"), hint = document.getElementById("hint");
@@ -85,10 +84,12 @@
   function send(s) { if (ws && ws.readyState === 1) ws.send(s); }
   function buzz() { if (navigator.vibrate) navigator.vibrate(8); }
 
+  var timer = null;
   function connect() {
-    if (!token) { state("Not paired", "#555"); msg.textContent = "Scan the QR code on the TV (☰ → Phone remote)."; return; }
-    state("Connecting…", "#FFC233");
-    ws = new WebSocket("wss://" + location.host + "/ws?t=" + encodeURIComponent(token));
+    clearTimeout(timer);
+    if (ws && ws.readyState < 2) return;
+    state(retry ? "Reconnecting…" : "Connecting…", "#FFC233");
+    var sock = ws = new WebSocket("ws://" + location.host + "/ws");
     ws.onopen = function () { retry = 0; state("Connected", "#4CD964"); msg.textContent = ""; };
     ws.onmessage = function (e) {
       var d = String(e.data);
@@ -103,11 +104,13 @@
         bar.classList.remove("on"); input.blur(); typing = false;
       }
     };
-    ws.onclose = function (e) {
+    ws.onclose = function () {
+      if (ws !== sock) return;
       ws = null;
-      if (retry > 6) { state("Disconnected", "#FF6B6B"); msg.textContent = "Lost the TV. Open ☰ → Phone remote on the TV and scan again."; return; }
-      state("Reconnecting…", "#FFC233");
-      setTimeout(connect, Math.min(4000, 400 * Math.pow(2, retry++)));
+      // Keep trying: the TV may be asleep or restarting and comes back at the same address.
+      if (retry > 4) { state("TV not reachable", "#FF6B6B"); msg.textContent = "Is the TV on and on this Wi-Fi? If its address changed, scan the QR code again (☰ → Phone remote)."; }
+      else state("Reconnecting…", "#FFC233");
+      timer = setTimeout(connect, Math.min(5000, 400 * Math.pow(2, retry++)));
     };
   }
 
@@ -140,6 +143,10 @@
     this.textContent = tv.classList.contains("on") ? "Aerial TV ▴" : "Aerial TV ▾";
   });
   setInterval(function () { send("ping"); }, 25000);
+  // Phones pause pages in the background; reconnect at once when the page is shown again.
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden && (!ws || ws.readyState > 1)) { retry = 0; connect(); }
+  });
   connect();
 })();
 </script>

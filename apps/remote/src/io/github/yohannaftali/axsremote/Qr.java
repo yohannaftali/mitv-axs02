@@ -1,5 +1,8 @@
 package io.github.yohannaftali.axsremote;
 
+import android.graphics.Bitmap;
+import android.graphics.Color;
+
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -314,5 +317,26 @@ final class Qr {
             for (int i = 0; i < bits.size(); i++) if (bits.get(i)) out[i >>> 3] |= (byte) (1 << (7 - (i & 7)));
             return out;
         }
+    }
+
+    /** The code for {@code text} as a black-on-white bitmap with the standard 4-module quiet zone. */
+    static Bitmap bitmap(String text) {
+        boolean[][] m = encode(text);
+        int quiet = 4;
+        int n = m.length + quiet * 2;
+        int scale = Math.max(1, 640 / n);
+        Bitmap b = Bitmap.createBitmap(n * scale, n * scale, Bitmap.Config.ARGB_8888);
+        b.eraseColor(Color.WHITE);
+        for (int y = 0; y < m.length; y++) {
+            for (int x = 0; x < m.length; x++) {
+                if (!m[y][x]) continue;
+                for (int dy = 0; dy < scale; dy++) {
+                    for (int dx = 0; dx < scale; dx++) {
+                        b.setPixel((x + quiet) * scale + dx, (y + quiet) * scale + dy, Color.BLACK);
+                    }
+                }
+            }
+        }
+        return b;
     }
 }
