@@ -34,7 +34,9 @@ import java.util.TreeMap;
  * Fetches prices and weather on a background thread, only between start()
  * and stop() (while the screensaver shows). Results go to SharedPreferences,
  * so the panel shows the last values instantly next time and while offline.
- * Requests carry no identifier: no key, no account, no device id.
+ * Keyless requests carry no identifier; a keyed provider gets only the
+ * owner's API key, sent in a header (never in the URL), and only when the
+ * owner set one in Home settings.
  */
 final class Feed {
     static final String ECB = "ecb";
@@ -43,21 +45,19 @@ final class Feed {
 
     private static final long MIN = 60_000L;
     private static final long HOUR = 60 * MIN;
-    private static final Map<String, Long> EVERY = new HashMap<>();
-    static {
-        EVERY.put(COINGECKO, 2 * MIN);
-        EVERY.put(GOLD, 5 * MIN);
-        EVERY.put(ECB, HOUR);
-        EVERY.put("weather", 15 * MIN);
-    }
+    private static final String WEATHER = "weather";
+    private static final String[] ALL = {COINGECKO, GOLD, ECB, Catalogue.YAHOO, Catalogue.TWELVE, Catalogue.FINNHUB, WEATHER};
     private static final int TIMEOUT_MS = 8000;
-    private static final String AGENT = "AXSClock/1.1";
+    private static final String AGENT = "AXSClock/1.2";
 
     /** One cached value; NaN when unknown. */
     static final class Value {
         double price = Double.NaN;
         double change = Double.NaN;
+        /** When AXS Clock fetched it. */
         long time;
+        /** When the market data itself is from (the provider's quote time). */
+        long asOf;
     }
 
     static final class Weather {
@@ -82,7 +82,7 @@ final class Feed {
         @Override
         public void run() {
             boolean changed = false;
-            for (String source : EVERY.keySet()) {
+            for (String source : ALL) {
                 if (!due(source)) continue;
                 attempted.put(source, System.currentTimeMillis());
                 try {
@@ -119,10 +119,27 @@ final class Feed {
         thread = null;
     }
 
+    /**
+     * How often a source is asked: the owner's interval, but never more often
+     * than the provider's free terms allow.
+     */
+    long every(String source) {
+        long r = conf.refreshMin * MIN;
+        switch (source) {
+            case WEATHER: return 15 * MIN;
+            case ECB: return HOUR;
+            case GOLD: return Math.max(5 * MIN, r);
+            case COINGECKO: return Math.max(conf.keyCoingecko.isEmpty() ? 2 * MIN : MIN, r);
+            // 800 calls a day on the free plan, one per symbol: about 2 minutes per symbol.
+            case Catalogue.TWELVE: return Math.max(r, Math.max(2, 2 * symbols(source).size()) * MIN);
+            default: return Math.max(MIN, r);
+        }
+    }
+
     private boolean due(String source) {
-        if (source.equals("weather") ? !conf.weather : !used(source)) return false;
+        if (source.equals(WEATHER) ? !conf.weather : !used(source) || !conf.available(source)) return false;
         long now = System.currentTimeMillis();
-        long every = EVERY.get(source);
+        long every = every(source);
         Long tried = attempted.get(source);
         if (tried != null && now - tried < every) return false;
         return now - cache.getLong("ok." + source, 0) >= every;
@@ -143,6 +160,7 @@ final class Feed {
         v.price = Double.parseDouble(f[0]);
         v.change = Double.parseDouble(f[1]);
         v.time = Long.parseLong(f[2]);
+        v.asOf = f.length > 3 ? Long.parseLong(f[3]) : v.time;
         if (t.invert && v.price != 0) {
             v.price = 1 / v.price;
             v.change = 1 / (1 + v.change) - 1;
@@ -172,7 +190,7 @@ final class Feed {
     /** Newest successful update of anything, 0 if none. */
     long lastUpdate() {
         long t = 0;
-        for (String source : EVERY.keySet()) t = Math.max(t, cache.getLong("ok." + source, 0));
+        for (String source : ALL) t = Math.max(t, cache.getLong("ok." + source, 0));
         return t;
     }
 
@@ -183,6 +201,9 @@ final class Feed {
             case COINGECKO: return coingecko();
             case GOLD: return gold();
             case ECB: return ecb();
+            case Catalogue.YAHOO: return yahoo();
+            case Catalogue.TWELVE: return twelve();
+            case Catalogue.FINNHUB: return finnhub();
             default: return weatherNow();
         }
     }
@@ -196,13 +217,15 @@ final class Feed {
     private boolean coingecko() throws Exception {
         List<String> ids = symbols(COINGECKO);
         JSONObject o = new JSONObject(get("https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd"
-                + "&include_24hr_change=true&ids=" + enc(String.join(",", ids))));
+                + "&include_24hr_change=true&include_last_updated_at=true&ids=" + enc(String.join(",", ids)),
+                conf.keyCoingecko.isEmpty() ? null : "x-cg-demo-api-key", conf.keyCoingecko));
         long now = System.currentTimeMillis();
         SharedPreferences.Editor e = cache.edit();
         for (String id : ids) {
             JSONObject c = o.optJSONObject(id);
             if (c == null || !c.has("usd")) continue;
-            put(e, COINGECKO, id, c.getDouble("usd"), c.optDouble("usd_24h_change", Double.NaN) / 100, now);
+            long at = c.optLong("last_updated_at", 0) * 1000;
+            put(e, COINGECKO, id, c.getDouble("usd"), c.optDouble("usd_24h_change", Double.NaN) / 100, now, at > 0 ? at : now);
         }
         e.putLong("ok." + COINGECKO, now).apply();
         return true;
@@ -217,7 +240,7 @@ final class Feed {
             JSONArray list = o.getJSONArray("symbols");
             if (list.length() == 0) continue;
             double price = Double.parseDouble(list.getJSONObject(0).getString("price"));
-            put(e, GOLD, symbol, price, dayChange(e, symbol, price, now), now);
+            put(e, GOLD, symbol, price, dayChange(e, symbol, price, now), now, now);
         }
         e.putLong("ok." + GOLD, now).apply();
         return true;
@@ -261,14 +284,78 @@ final class Feed {
         Map.Entry<String, JSONObject> prevEntry = days.lowerEntry(days.lastKey());
         JSONObject prev = prevEntry == null ? null : prevEntry.getValue();
         long now = System.currentTimeMillis();
+        // The ECB publishes around 16:00 CET (15:00 UTC) on working days.
+        long published = day.parse(days.lastKey()).getTime() + 15 * HOUR;
         SharedPreferences.Editor e = cache.edit();
         for (String symbol : symbols) {
             if (!last.has(symbol)) continue;
             double p = last.getDouble(symbol);
             double change = prev != null && prev.has(symbol) ? p / prev.getDouble(symbol) - 1 : Double.NaN;
-            put(e, ECB, symbol, p, change, now);
+            put(e, ECB, symbol, p, change, now, published);
         }
         e.putString("date." + ECB, days.lastKey()).putLong("ok." + ECB, now).apply();
+        return true;
+    }
+
+    /**
+     * Yahoo Finance chart endpoint (unofficial, opt-in by the owner): live FX,
+     * indices, futures and crypto; change against the previous close.
+     */
+    private boolean yahoo() throws Exception {
+        long now = System.currentTimeMillis();
+        SharedPreferences.Editor e = cache.edit();
+        boolean any = false;
+        for (String symbol : symbols(Catalogue.YAHOO)) {
+            try {
+                JSONObject meta = new JSONObject(get("https://query1.finance.yahoo.com/v8/finance/chart/" + enc(symbol)
+                        + "?range=1d&interval=1d", null, null))
+                        .getJSONObject("chart").getJSONArray("result").getJSONObject(0).getJSONObject("meta");
+                double price = meta.getDouble("regularMarketPrice");
+                double prev = meta.optDouble("chartPreviousClose", meta.optDouble("previousClose", Double.NaN));
+                long at = meta.optLong("regularMarketTime", 0) * 1000;
+                put(e, Catalogue.YAHOO, symbol, price, prev > 0 ? price / prev - 1 : Double.NaN, now, at > 0 ? at : now);
+                any = true;
+            } catch (Exception ignored) {
+                // One unknown symbol must not hide the others.
+            }
+        }
+        if (!any) throw new IOException("yahoo: nothing fetched");
+        e.putLong("ok." + Catalogue.YAHOO, now).apply();
+        return true;
+    }
+
+    /** Twelve Data /quote with the owner's key; one batched request. */
+    private boolean twelve() throws Exception {
+        List<String> symbols = symbols(Catalogue.TWELVE);
+        JSONObject o = new JSONObject(get("https://api.twelvedata.com/quote?symbol=" + enc(String.join(",", symbols)),
+                "Authorization", "apikey " + conf.keyTwelve));
+        if ("error".equals(o.optString("status"))) throw new IOException("twelvedata: " + o.optInt("code"));
+        long now = System.currentTimeMillis();
+        SharedPreferences.Editor e = cache.edit();
+        for (String symbol : symbols) {
+            JSONObject q = symbols.size() == 1 ? o : o.optJSONObject(symbol);
+            if (q == null || !q.has("close") || "error".equals(q.optString("status"))) continue;
+            long at = q.optLong("last_quote_at", q.optLong("timestamp", 0)) * 1000;
+            put(e, Catalogue.TWELVE, symbol, q.getDouble("close"), q.optDouble("percent_change", Double.NaN) / 100,
+                    now, at > 0 ? at : now);
+        }
+        e.putLong("ok." + Catalogue.TWELVE, now).apply();
+        return true;
+    }
+
+    /** Finnhub /quote with the owner's key; c = price, dp = change in percent, t = quote time. */
+    private boolean finnhub() throws Exception {
+        long now = System.currentTimeMillis();
+        SharedPreferences.Editor e = cache.edit();
+        for (String symbol : symbols(Catalogue.FINNHUB)) {
+            JSONObject q = new JSONObject(get("https://finnhub.io/api/v1/quote?symbol=" + enc(symbol),
+                    "X-Finnhub-Token", conf.keyFinnhub));
+            double price = q.optDouble("c", 0);
+            if (price <= 0) continue;
+            long at = q.optLong("t", 0) * 1000;
+            put(e, Catalogue.FINNHUB, symbol, price, q.optDouble("dp", Double.NaN) / 100, now, at > 0 ? at : now);
+        }
+        e.putLong("ok." + Catalogue.FINNHUB, now).apply();
         return true;
     }
 
@@ -357,8 +444,9 @@ final class Feed {
         return new double[]{Math.round(lat * 100) / 100.0, Math.round(lon * 100) / 100.0};
     }
 
-    private static void put(SharedPreferences.Editor e, String source, String symbol, double price, double change, long now) {
-        e.putString("t." + source + "." + symbol, price + ";" + change + ";" + now);
+    private static void put(SharedPreferences.Editor e, String source, String symbol, double price, double change,
+                            long now, long asOf) {
+        e.putString("t." + source + "." + symbol, price + ";" + change + ";" + now + ";" + asOf);
     }
 
     private static String enc(String s) throws IOException {
@@ -366,12 +454,17 @@ final class Feed {
     }
 
     private static String get(String url) throws IOException {
+        return get(url, null, null);
+    }
+
+    private static String get(String url, String header, String value) throws IOException {
         HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
         c.setConnectTimeout(TIMEOUT_MS);
         c.setReadTimeout(TIMEOUT_MS);
         c.setInstanceFollowRedirects(true);
         c.setRequestProperty("User-Agent", AGENT);
         c.setRequestProperty("Accept", "application/json");
+        if (header != null) c.setRequestProperty(header, value);
         try {
             if (c.getResponseCode() != 200) throw new IOException("HTTP " + c.getResponseCode());
             try (InputStream in = c.getInputStream()) {

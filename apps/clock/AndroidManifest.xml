@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="io.github.yohannaftali.axsclock"
-    android:versionCode="2"
-    android:versionName="1.1">
+    android:versionCode="3"
+    android:versionName="1.2">
 
     <!-- Market and weather panel (#33): fetched only while the screensaver shows. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- Approximate location for the weather; granted by apply.sh, rounded to ~1 km before use. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Only apps signed with the same key (AXS Home) may read or change the screensaver settings. -->
+    <permission
+        android:name="io.github.yohannaftali.axsclock.permission.SETTINGS"
+        android:protectionLevel="signature" />
+
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
@@ -27,5 +32,21 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </service>
+
+        <!-- Home settings → Screensaver: reads and stores settings (API keys stay here). -->
+        <provider
+            android:name=".SettingsProvider"
+            android:authorities="io.github.yohannaftali.axsclock.settings"
+            android:exported="true"
+            android:permission="io.github.yohannaftali.axsclock.permission.SETTINGS" />
+
+        <!-- Home settings → Screensaver → Preview. -->
+        <activity
+            android:name=".PreviewActivity"
+            android:exported="true"
+            android:permission="io.github.yohannaftali.axsclock.permission.SETTINGS"
+            android:excludeFromRecents="true"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Material.NoActionBar.Fullscreen" />
     </application>
 </manifest>

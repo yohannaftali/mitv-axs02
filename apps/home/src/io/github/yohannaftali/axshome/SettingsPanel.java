@@ -2,6 +2,7 @@ package io.github.yohannaftali.axshome;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.ImageDecoder;
@@ -9,11 +10,14 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.media.ThumbnailUtils;
+import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Size;
 import android.view.Gravity;
@@ -21,6 +25,8 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -37,12 +43,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * "Home settings": clock format, wallpaper style, own wallpaper file, video
- * sound. Console-style layout: the live wallpaper behind a dimmed screen,
+ * sound, and the AXS Clock screensaver (tickers, data sources, refresh). Console-style layout: the live wallpaper behind a dimmed screen,
  * categories on the left, option cards on a translucent panel on the right,
  * with the same white focus ring and zoom as the app tiles.
  */
@@ -56,12 +64,14 @@ final class SettingsPanel {
     private static final int CLOCK = 0;
     private static final int WALLPAPER = 1;
     private static final int SOUND = 2;
-    private static final String[] CATEGORY = {"Clock", "Wallpaper", "Sound"};
-    private static final int[] CATEGORY_ICON = {Glyph.CLOCK, Glyph.WALLPAPER, Glyph.SOUND};
+    private static final int SCREENSAVER = 3;
+    private static final String[] CATEGORY = {"Clock", "Wallpaper", "Sound", "Screensaver"};
+    private static final int[] CATEGORY_ICON = {Glyph.CLOCK, Glyph.WALLPAPER, Glyph.SOUND, Glyph.MOON};
     private static final String[] CATEGORY_HINT = {
             "How the time is shown on the home screen.",
             "Moves slowly behind the home screen. Pick one to see it here at once.",
             "Sound of video wallpapers you add yourself.",
+            "AXS Clock: what it shows, where the prices come from, how often they refresh.",
     };
 
     private static final int RADIUS = 14;
@@ -127,6 +137,7 @@ final class SettingsPanel {
 
         category = CLOCK;
         browsing = false;
+        saverView = null;
         render(-1);
         home.showHomeContent(false);
         dialog.show();
@@ -163,9 +174,10 @@ final class SettingsPanel {
             row.addView(label, lp);
             row.setOnFocusChangeListener((v, has) -> {
                 if (rendering) return;
-                if (has && (category != index || browsing)) {
+                if (has && (category != index || browsing || saverView != null)) {
                     category = index;
                     browsing = false;
+                    saverView = null;
                     render(-1);
                 }
                 styleCategories();
@@ -253,7 +265,8 @@ final class SettingsPanel {
             paneHint.setText(CATEGORY_HINT[category]);
             if (category == CLOCK) renderClock();
             else if (category == WALLPAPER) renderWallpaper();
-            else renderSound();
+            else if (category == SOUND) renderSound();
+            else renderScreensaver();
         }
         styleCategories();
         pane.setAlpha(0f);
@@ -441,7 +454,10 @@ final class SettingsPanel {
         View f = dialog.getCurrentFocus();
         if (code == KeyEvent.KEYCODE_BACK) {
             if (ev.getAction() != KeyEvent.ACTION_UP) return true;
-            if (browsing) {
+            if (category == SCREENSAVER && saverView != null && !browsing) {
+                saverView = null;
+                render(0);
+            } else if (browsing) {
                 if (browseDir == null) {
                     browsing = false;
                     render(Integer.MAX_VALUE);
@@ -475,6 +491,359 @@ final class SettingsPanel {
             }
         }
         return false;
+    }
+
+    // ---- screensaver (AXS Clock's settings, through its provider) ----
+
+    private static final Uri CLOCK_SETTINGS = Uri.parse("content://io.github.yohannaftali.axsclock.settings");
+    private static final String CLOCK_PKG = "io.github.yohannaftali.axsclock";
+    private static final int[] REFRESH = {1, 2, 5, 15};
+    private static final String[] BACKGROUNDS = {"waves", "orbit", "pop", "bloom", "black"};
+    private static final String[] KEYED = {"twelvedata", "finnhub", "coingecko"};
+
+    /** null: main page; "add": catalogue; "key:<source>": key entry; "city": weather city entry. */
+    private String saverView;
+    private Bundle saver;
+    private final List<String[]> catalogue = new ArrayList<>();
+    private final Map<String, String[]> sources = new HashMap<>();
+
+    private Bundle clock(String method, Bundle extras) {
+        try {
+            return home.getContentResolver().call(CLOCK_SETTINGS, method, null, extras);
+        } catch (RuntimeException e) {
+            // AXS Clock missing, or not signed with the same key.
+            return null;
+        }
+    }
+
+    private boolean loadSaver() {
+        saver = clock("get", null);
+        if (saver == null) return false;
+        if (catalogue.isEmpty()) {
+            Bundle c = clock("catalogue", null);
+            if (c == null) return false;
+            for (String line : c.getString("items", "").split("\n")) {
+                String[] f = line.split("\\|", -1);
+                if (f.length == 3) catalogue.add(f);
+            }
+            for (String line : c.getString("sources", "").split("\n")) {
+                String[] f = line.split("\\|", -1);
+                if (f.length == 3) sources.put(f[0], f);
+            }
+        }
+        return true;
+    }
+
+    private void putSaver(Bundle extras, int focus) {
+        Bundle b = clock("put", extras);
+        if (b != null) saver = b;
+        render(focus);
+    }
+
+    private int focusedIndex() {
+        return Math.max(0, items.indexOf(dialog.getCurrentFocus()));
+    }
+
+    private List<String[]> tickers() {
+        List<String[]> out = new ArrayList<>();
+        for (String line : saver.getString("tickers", "").split("\n")) {
+            String[] f = line.split("\\|", -1);
+            if (f.length >= 3) out.add(f);
+        }
+        return out;
+    }
+
+    private void putTickers(List<String[]> list, int focus) {
+        StringBuilder b = new StringBuilder();
+        for (String[] t : list) {
+            if (b.length() > 0) b.append('\n');
+            b.append(String.join("|", t));
+        }
+        Bundle e = new Bundle();
+        e.putString("tickers", b.toString());
+        putSaver(e, focus);
+    }
+
+    private String[] item(String label) {
+        for (String[] i : catalogue) if (i[0].equals(label)) return i;
+        return null;
+    }
+
+    private String sourceName(String id) {
+        String[] s = sources.get(id);
+        return s == null ? id : s[1];
+    }
+
+    private boolean available(String source) {
+        return saver.getBoolean("available." + source, false);
+    }
+
+    /** "source:symbol[:invert]" options of a catalogue item that can be used now. */
+    private List<String> usable(String[] item) {
+        List<String> out = new ArrayList<>();
+        for (String o : item[2].split(",")) if (available(o.split(":", 2)[0])) out.add(o);
+        return out;
+    }
+
+    private static String[] ticker(String label, String option) {
+        String[] f = option.split(":", -1);
+        return f.length > 2 ? new String[]{label, f[0], f[1], f[2]} : new String[]{label, f[0], f[1]};
+    }
+
+    private static String option(String[] t) {
+        return t[1] + ":" + t[2] + (t.length > 3 && t[3].equals("invert") ? ":invert" : "");
+    }
+
+    private void renderScreensaver() {
+        if (!loadSaver()) {
+            TextView t = home.label("AXS Clock is not installed or is an older build. Apply "
+                    + "changes/33-market-panel to use these settings.", 16, DIM, false);
+            pane.addView(t);
+            return;
+        }
+        if ("add".equals(saverView)) {
+            renderAddTicker();
+            return;
+        }
+        if (saverView != null) {
+            renderEntry();
+            return;
+        }
+        List<String[]> list = tickers();
+        pane.addView(section("Tickers  ·  " + list.size() + " of 8  ·  OK on a ticker changes its source"));
+        for (int i = 0; i < list.size(); i++) {
+            int index = i;
+            String[] t = list.get(i);
+            String[] item = item(t[0]);
+            List<String> options = item == null ? new ArrayList<>() : usable(item);
+            LinearLayout row = row();
+            String sub = sourceName(t[1]) + (options.size() > 1 ? "   ·   " + (options.size() - 1) + " more source"
+                    + (options.size() > 2 ? "s" : "") : "");
+            View main = card(twoLines(t[0], sub), -1, 64, false, () -> {
+                int at = options.indexOf(option(t));
+                if (options.size() < 2) return;
+                list.set(index, ticker(t[0], options.get((at + 1) % options.size())));
+                putTickers(list, focusedIndex());
+            });
+            row.addView(main, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+            row.addView(space(8));
+            row.addView(iconCard("▲", index > 0, () -> {
+                if (index == 0) return;
+                list.add(index - 1, list.remove(index));
+                putTickers(list, (index - 1) * 3 + 1);
+            }));
+            row.addView(space(8));
+            row.addView(iconCard("✕", true, () -> {
+                list.remove(index);
+                putTickers(list, Math.min(index, list.size()) * 3);
+            }));
+            pane.addView(row, rowLp());
+        }
+        if (list.size() < 8) {
+            pane.addView(card(twoLines("+  Add a ticker", "Currencies, metals, crypto, indices, oil"), -1, 64, false, () -> {
+                saverView = "add";
+                render(0);
+            }), rowLp());
+        }
+
+        pane.addView(section("Data sources"));
+        boolean yahoo = saver.getBoolean("yahoo", false);
+        pane.addView(toggleRow("Yahoo Finance", sources.containsKey("yahoo") ? sources.get("yahoo")[2] : "", yahoo, () -> {
+            Bundle e = new Bundle();
+            e.putBoolean("yahoo", !yahoo);
+            putSaver(e, focusedIndex());
+        }), rowLp());
+        for (String s : KEYED) {
+            String masked = saver.getString("key." + s, "");
+            String name = s.equals("coingecko") ? "CoinGecko demo key (optional)" : sourceName(s);
+            String note = (masked.isEmpty() ? "No key" : "Key " + masked) + "   ·   "
+                    + (sources.containsKey(s) ? sources.get(s)[2] : "");
+            pane.addView(card(twoLines(name, note), -1, 64, false, () -> {
+                saverView = "key:" + s;
+                render(0);
+            }), rowLp());
+        }
+        TextView always = home.label("Always on, no account: CoinGecko, goldprice.dev, ECB.", 13, DIM, false);
+        always.setPadding(dp(8), dp(2), 0, 0);
+        pane.addView(always);
+
+        pane.addView(section("Display"));
+        int refresh = saver.getInt("refresh", 2);
+        pane.addView(card(twoLines("Refresh every " + refresh + " min",
+                "OK to change · each source is held to what its free plan allows"), -1, 64, false, () -> {
+            int next = REFRESH[0];
+            for (int i = 0; i < REFRESH.length; i++) if (REFRESH[i] == refresh) next = REFRESH[(i + 1) % REFRESH.length];
+            Bundle e = new Bundle();
+            e.putInt("refresh", next);
+            putSaver(e, focusedIndex());
+        }), rowLp());
+        String bg = saver.getString("background", "waves");
+        pane.addView(card(twoLines("Background: " + (bg.equals("black") ? "Black" : StyleView.title(bg)),
+                "OK to change · dimmed behind the clock"), -1, 64, false, () -> {
+            int at = Arrays.asList(BACKGROUNDS).indexOf(bg);
+            Bundle e = new Bundle();
+            e.putString("background", BACKGROUNDS[(at + 1) % BACKGROUNDS.length]);
+            putSaver(e, focusedIndex());
+        }), rowLp());
+        boolean weather = saver.getBoolean("weather", true);
+        pane.addView(toggleRow("Weather", "From the TV's location (Open-Meteo)", weather, () -> {
+            Bundle e = new Bundle();
+            e.putBoolean("weather", !weather);
+            putSaver(e, focusedIndex());
+        }), rowLp());
+        String city = saver.getString("weather_city", "");
+        pane.addView(card(twoLines("City when the TV has no location", city.isEmpty() ? "Not set" : city),
+                -1, 64, false, () -> {
+                    saverView = "city";
+                    render(0);
+                }), rowLp());
+        pane.addView(card(twoLines("▶  Preview the screensaver", "Any key returns here"), -1, 64, false, () -> {
+            try {
+                home.startActivity(new Intent().setClassName(CLOCK_PKG, CLOCK_PKG + ".PreviewActivity"));
+            } catch (RuntimeException e) {
+                Toast.makeText(home, "Cannot open the preview", Toast.LENGTH_LONG).show();
+            }
+        }), rowLp());
+    }
+
+    /** The catalogue, grouped; items without a usable source say what they need. */
+    private void renderAddTicker() {
+        paneTitle.setText("Add a ticker");
+        paneHint.setText("OK adds it to the screensaver · BACK to go back");
+        List<String[]> list = tickers();
+        String group = "";
+        for (String[] item : catalogue) {
+            boolean shown = false;
+            for (String[] t : list) if (t[0].equals(item[0])) shown = true;
+            if (shown) continue;
+            if (!item[1].equals(group)) {
+                group = item[1];
+                pane.addView(section(group));
+            }
+            List<String> options = usable(item);
+            List<String> names = new ArrayList<>();
+            for (String o : item[2].split(",")) names.add(sourceName(o.split(":", 2)[0]));
+            String sub = options.isEmpty() ? "Needs " + String.join(" or ", names) + " (Data sources)"
+                    : "From " + sourceName(options.get(0).split(":", 2)[0]);
+            pane.addView(card(twoLines(item[0], sub), -1, 60, false, () -> {
+                if (options.isEmpty()) {
+                    Toast.makeText(home, "Turn on " + String.join(" or ", names) + " first", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                list.add(ticker(item[0], options.get(0)));
+                saverView = null;
+                putTickers(list, (list.size() - 1) * 3);
+            }), rowLp());
+        }
+    }
+
+    /** Text entry for an API key or the weather city; the value goes straight to AXS Clock. */
+    private void renderEntry() {
+        boolean city = saverView.equals("city");
+        String source = city ? null : saverView.substring(4);
+        paneTitle.setText(city ? "Weather city" : (source.equals("coingecko") ? "CoinGecko demo key" : sourceName(source) + " key"));
+        paneHint.setText(city ? "Used only when the TV cannot tell its location · BACK to cancel"
+                : "Stored only in AXS Clock on this TV · the phone remote keyboard makes typing easy");
+        EditText field = new EditText(home);
+        field.setSingleLine(true);
+        field.setTextColor(Color.WHITE);
+        field.setHintTextColor(DIM);
+        field.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 20);
+        field.setPadding(dp(18), 0, dp(18), 0);
+        field.setBackground(home.rounded(0x1FFFFFFF, Color.WHITE, RADIUS, 2));
+        field.setImeOptions(EditorInfo.IME_ACTION_DONE);
+        if (city) {
+            field.setText(saver.getString("weather_city", ""));
+            field.setHint("e.g. Bandung");
+            field.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+        } else {
+            String masked = saver.getString("key." + source, "");
+            field.setHint(masked.isEmpty() ? "Paste or type the key" : "Current key " + masked + " · type a new one");
+            field.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                    | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        }
+        Runnable save = () -> {
+            String v = field.getText().toString().trim();
+            if (!city && v.isEmpty()) return;
+            Bundle e = new Bundle();
+            e.putString(city ? "weather_city" : "key." + source, v);
+            Bundle b = clock("put", e);
+            if (b != null) saver = b;
+            if (!city && saver.getString("key." + source, "").isEmpty()) {
+                Toast.makeText(home, "That does not look like a key (8–100 letters, digits, - or _)", Toast.LENGTH_LONG).show();
+                return;
+            }
+            saverView = null;
+            render(0);
+        };
+        field.setOnEditorActionListener((v, action, ev) -> {
+            save.run();
+            return true;
+        });
+        items.add(field);
+        pane.addView(field, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(60)));
+        pane.addView(card(twoLines("Save", ""), -1, 56, false, save), rowLpTop());
+        boolean has = city ? !saver.getString("weather_city", "").isEmpty() : !saver.getString("key." + source, "").isEmpty();
+        if (has) {
+            pane.addView(card(twoLines(city ? "Clear the city" : "Remove the key",
+                    city ? "Weather then needs the TV's location" : "Tickers from this source switch to another one"),
+                    -1, 64, false, () -> {
+                        Bundle e = new Bundle();
+                        e.putString(city ? "weather_city" : "key." + source, "");
+                        Bundle b = clock("put", e);
+                        if (b != null) saver = b;
+                        saverView = null;
+                        render(0);
+                    }), rowLp());
+        }
+    }
+
+    private TextView section(String text) {
+        TextView t = home.label(text, 13, DIM, true);
+        t.setLetterSpacing(0.05f);
+        t.setPadding(dp(8), dp(16), 0, dp(8));
+        return t;
+    }
+
+    private LinearLayout twoLines(String title, String sub) {
+        LinearLayout inner = new LinearLayout(home);
+        inner.setOrientation(LinearLayout.VERTICAL);
+        inner.setGravity(Gravity.CENTER_VERTICAL);
+        inner.setPadding(dp(20), 0, dp(20), 0);
+        TextView a = home.label(title, 17, Color.WHITE, false);
+        a.setSingleLine(true);
+        inner.addView(a);
+        if (!sub.isEmpty()) {
+            TextView b = home.label(sub, 13, DIM, false);
+            b.setSingleLine(true);
+            b.setEllipsize(TextUtils.TruncateAt.END);
+            inner.addView(b, top(3));
+        }
+        return inner;
+    }
+
+    private View toggleRow(String title, String sub, boolean on, Runnable flip) {
+        LinearLayout inner = new LinearLayout(home);
+        inner.setOrientation(LinearLayout.HORIZONTAL);
+        inner.setGravity(Gravity.CENTER_VERTICAL);
+        LinearLayout texts = twoLines(title, sub);
+        inner.addView(texts, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f));
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(52), dp(30));
+        lp.rightMargin = dp(20);
+        inner.addView(toggle(on), lp);
+        return card(inner, -1, 64, false, flip);
+    }
+
+    private View iconCard(String glyph, boolean enabled, Runnable onClick) {
+        TextView t = home.label(glyph, 20, enabled ? Color.WHITE : 0x40FFFFFF, false);
+        t.setGravity(Gravity.CENTER);
+        return card(t, 64, 64, false, onClick);
+    }
+
+    private LinearLayout.LayoutParams rowLpTop() {
+        LinearLayout.LayoutParams lp = rowLp();
+        lp.topMargin = dp(10);
+        return lp;
     }
 
     // ---- small view helpers ----

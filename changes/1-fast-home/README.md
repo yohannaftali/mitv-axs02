@@ -41,7 +41,8 @@ Layout since #18:
   (`INPUT_STATE_CONNECTED`), grey otherwise; it updates live. This TV reports
   "standby" for every input, even an empty AV port, so standby counts as grey.
 - **Home settings** (☰ → *Home settings*): only the wallpaper stays visible,
-  dimmed, behind a translucent panel. Categories Clock, Wallpaper and Sound on
+  dimmed, behind a translucent panel. Categories Clock, Wallpaper, Sound and
+  Screensaver (AXS Clock tickers, sources and keys, see #33 / #48) on
   the left (UP/DOWN, RIGHT or OK to enter); option cards on the right with the
   app tiles' white ring and zoom; the selected one has an accent border and a
   check mark. Wallpaper cards are small previews (the focused one animates);

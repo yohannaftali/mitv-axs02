@@ -1,5 +1,5 @@
 #!/bin/sh
-# Installs AXS Clock 1.1 (clock + weather + market tiles), grants it
+# Installs AXS Clock 1.2 (clock + weather + market tiles + settings), grants it
 # approximate location for the weather, keeps it as the screensaver, and
 # pushes the optional weather_city from .env to the TV (never printed, never
 # committed). Re-run after editing apps/clock/config/clock.conf or .env

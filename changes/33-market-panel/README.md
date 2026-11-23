@@ -54,6 +54,48 @@ Symbols, order and sources are in
 (`ticker|<label>|<source>|<symbol>[|invert]`), as are `background|waves`
 (`orbit`, `pop`, `bloom` or `black`) and `weather|auto` / `weather|off`.
 
+## Screensaver settings on the TV (#48)
+
+☰ → Home settings → **Screensaver** (AXS Clock 1.2) changes all of this
+without editing `clock.conf`:
+
+![Home settings → Screensaver: tickers with their source, move and remove](../../docs/screenshots/screensaver-settings.webp)
+
+- **Tickers** (up to 8): OK on a ticker switches it to its next available
+  source; ▲ moves it up, ✕ removes it; *Add a ticker* opens a catalogue of
+  currencies, metals, crypto, indices (IHSG, S&P 500, Dow Jones, NASDAQ,
+  Nikkei 225), WTI / Brent oil and US ETFs (SPY, QQQ).
+- **Data sources** (opt-in; the defaults stay the keyless ones above):
+  - **Yahoo Finance**: live FX, indices, futures, crypto. Its chart endpoint
+    is unofficial and may stop working; credited on screen.
+  - **Twelve Data** and **Finnhub**: need your own free API key; a
+    **CoinGecko demo key** is optional and allows a 1-minute refresh.
+  - Keys are typed on the TV (the phone remote keyboard from #46/#47 makes
+    it easy), kept only in AXS Clock's private storage, sent to the provider
+    in a header (never in a URL), shown only masked (`••••1a2b`) and never
+    returned to AXS Home. `revert.sh` deletes them with the app.
+  - Turning a source off moves its tickers to another source, or hides
+    tickers only it can provide; they come back when it is on again.
+  - TradingView is not offered: it has no data API for personal accounts,
+    and logging in to its website from the TV to scrape it is against its
+    terms and would store your password on the TV.
+- **Refresh every** 1, 2, 5 or 15 minutes, held to each provider's free
+  plan (CoinGecko 2 min, or 1 with a key; goldprice.dev 5 min; ECB hourly;
+  Twelve Data 2 min per symbol for its 800 calls a day).
+- **Background**, **Weather** on/off and the **fallback city**, and
+  **Preview** (any key returns).
+- **Freshness:** prices are fetched as soon as the screensaver starts. A
+  value older than two refreshes, or from a closed market, turns grey with
+  its time (`as of 16:00`, `as of Fri 22:00`); ECB rates show when they were
+  published.
+
+![The screensaver with Yahoo Finance for USD/IDR and IHSG (weather line blurred here)](../../docs/screenshots/screensaver.webp)
+
+**How Home talks to Clock:** AXS Clock exports a settings provider guarded
+by a *signature* permission, so only AXS Home (built with the same key) can
+read or change it; other apps and `adb shell content call` are refused.
+AXS Home itself still has no INTERNET permission.
+
 ## Weather location (private)
 
 - **Automatic:** the TV's approximate location from Android's network
@@ -72,7 +114,8 @@ Symbols, order and sources are in
 - Fetches only while the screensaver shows; it stops the moment you press
   a button. No boot receiver, no background service, no alarms: start-up and
   shutdown are unaffected.
-- Requests carry no identifier (generic `User-Agent`, no key, no device id).
+- Keyless requests carry no identifier (generic `User-Agent`, no key, no
+  device id); a keyed provider receives only the key you entered.
 - Measured on this TV: about 9.5% of one CPU core while showing (mostly the
   Waves animation; `background|black` for less), about 0.15% after waking
   with the fetch thread gone.
@@ -81,7 +124,7 @@ Symbols, order and sources are in
 ## Use
 
 ```sh
-sh changes/33-market-panel/apply.sh     # build, install 1.1, grant location, keep as screensaver
+sh changes/33-market-panel/apply.sh     # build, install 1.2, grant location, keep as screensaver
 sh changes/33-market-panel/check.sh     # 0 = 1.1 with INTERNET and location is the screensaver
 sh changes/33-market-panel/revert.sh    # back to the offline clock from #32
 ```

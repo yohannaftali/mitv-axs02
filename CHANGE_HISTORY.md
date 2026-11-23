@@ -3,6 +3,14 @@
 Newest first. Never include the TV IP, Netflix ESN, serial, MACs or account
 names — see `AGENTS.md` → Private data.
 
+## [2026-11-23] — feat(systemui): Screensaver settings with selectable market data sources (#48)
+- Issue #48
+- Files: apps/clock/ (Catalogue, SettingsProvider with signature permission, Face split out of ClockDream, PreviewActivity, Conf owner settings + secrets, Feed: Yahoo Finance chart API, Twelve Data, Finnhub, CoinGecko demo key, per-source minimum intervals, quote "as of" times; 1.2), apps/home/ (SettingsPanel Screensaver category, Glyph.MOON, uses-permission), changes/33-market-panel/{README.md,apply.sh}, changes/1-fast-home/README.md, README.md, docs/screenshots/{screensaver-settings,screensaver}.webp (weather line blurred)
+- Verified on TV: category renders the current tickers; Yahoo on → USD/IDR switched to Yahoo; SOL removed, IHSG added from the catalogue; preview shows live Yahoo values and grey "as of" for closed markets (IHSG 16:00, ECB Fri); Twelve Data key saved and shown masked, not readable from adb (provider refused, run-as refused), not in logcat; Yahoo off → USD/IDR back to ECB and IHSG hidden, Yahoo on → both back; real screensaver (ClockDream) runs; #33 revert → check 1, apply twice → check 0; AXS Home keeps the permission when AXS Clock is installed after it; no crash
+- Found: Yahoo IDR=X itself lags (last quote 17:32 at 20:17), shown honestly as "as of 17:32"
+- Not verified: a real Twelve Data / Finnhub / CoinGecko key (owner), reboot
+- TV state left: applied with default tickers (the revert test cleared the test settings)
+
 ## [2026-11-23] — fix(apps): phone remote never connects in browsers (#51)
 - Issue #51 (owner's report: page shown, keeps connecting, "TV not reachable")
 - Cause: RemoteServer.WS_GUID was wrong since #40 (ends C11B05 instead of RFC 6455's C85B11), so browsers rejected every handshake; the PC test client never checked Sec-WebSocket-Accept
